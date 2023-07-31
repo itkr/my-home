@@ -11,6 +11,10 @@ import {
   HStack,
   Flex,
   Switch,
+  Slider,
+  SliderTrack,
+  SliderFilledTrack,
+  SliderThumb,
 } from "@chakra-ui/react";
 import { HuePicker, AlphaPicker } from "react-color";
 import { FC, useEffect, useState } from "react";
@@ -375,29 +379,74 @@ const LightCard: FC<{
       <CardBody
         // bg={hex}
         // bg={`hsl(${(light.state.hue / 65535) * 360}, 100%, 50%)`}
+        // hsv?
         bg={`hsl(${(light.state.hue / 65535) * 360}, ${
           (light.state.sat / 254) * 100
         }%, ${(light.state.bri / 254) * 100}%)`}
       >
         <Flex justifyContent="space-between" alignItems="center">
           <Stack>
-            <HuePicker
-              color={{ h: hue, s: 254, l: 254 }}
-              onChange={(color) => {
-                if (!light.state.on) return;
-                setHue(color.hsl.h);
-                setHex(color.hex);
-              }}
-              onChangeComplete={(color) => {
-                putLight(deviceId, {
-                  hue: Math.round((color.hsl.h / 360) * 65535),
-                });
-              }}
-            />
+            <HStack>
+              <Box>H</Box>
+              <HuePicker
+                color={{ h: hue, s: 254, l: 254 }}
+                onChange={(color) => {
+                  if (!light.state.on) return;
+                  setHue(color.hsl.h);
+                  setHex(color.hex);
+                }}
+                onChangeComplete={(color) => {
+                  putLight(deviceId, {
+                    hue: Math.round((color.hsl.h / 360) * 65535),
+                  });
+                }}
+              />
+            </HStack>
+            <HStack>
+              <Box>S</Box>
+              <Slider
+                min={0}
+                max={254}
+                value={light.state.sat}
+                onChange={(value) => {
+                  putLight(deviceId, { sat: value }).then(() => {
+                    refresh();
+                  });
+                }}
+              >
+                <SliderTrack>
+                  <SliderFilledTrack />
+                </SliderTrack>
+                <SliderThumb />
+              </Slider>
+            </HStack>
+            <HStack>
+              <Box>V</Box>
+              <Slider
+                min={0}
+                max={254}
+                value={light.state.bri}
+                onChange={(value) => {
+                  putLight(deviceId, { bri: value }).then(() => {
+                    refresh();
+                  });
+                }}
+              >
+                <SliderTrack>
+                  <SliderFilledTrack />
+                </SliderTrack>
+                <SliderThumb />
+              </Slider>
+            </HStack>
           </Stack>
           <Switch
             isChecked={light.state.on}
             onChange={async () => {
+              console.log(
+                `${light.state.hue}, ${(light.state.sat / 254) * 100}%, ${
+                  (light.state.bri / 254) * 100
+                }%`
+              );
               await toggleLight(deviceId).then(async () => {
                 await refresh();
               });
@@ -405,7 +454,7 @@ const LightCard: FC<{
           />
         </Flex>
       </CardBody>
-      <CardFooter>Footer</CardFooter>
+      <CardFooter></CardFooter>
     </Card>
   );
 };
