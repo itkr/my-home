@@ -73,30 +73,32 @@ const useLights = () => {
   const username = "9cjWI194Z58UwXDBKww9SMlZLrLH-0k01Gdjr1hv";
   const [lights, setLights] = useState<Record<string, Light>>({});
 
-  const getLights = () => {
+  const getLights = (): Promise<any> => {
     const url = `http://${ip}/api/${username}/lights`;
-    axios.get(url).then((res) => {
+    return axios.get(url).then((res) => {
       setLights(res.data);
     });
   };
 
-  const getLight = (deviceId: string) => {
+  const getLight = (deviceId: string): Promise<any> => {
     const url = `http://${ip}/api/${username}/lights/${deviceId}`;
-    axios.get(url).then((res) => {
+    return axios.get(url).then((res) => {
       setLights((prev) => ({ ...prev, [deviceId]: res.data }));
     });
   };
 
-  const toggleLight = (deviceId: string) => {
-    const url = `http://${ip}/api/${username}/lights/${deviceId}/state`;
-    putLight(deviceId, { on: !lights[deviceId].state.on });
+  const toggleLight = (deviceId: string): Promise<any> => {
+    return putLight(deviceId, { on: !lights[deviceId].state.on });
+    // const url = `http://${ip}/api/${username}/lights/${deviceId}/state`;
+    // return axios.put(url, { on: !lights[deviceId].state.on });
   };
 
-  const putLight = (deviceId: string, state: Partial<Light["state"]>) => {
+  const putLight = (
+    deviceId: string,
+    state: Partial<Light["state"]>
+  ): Promise<any> => {
     const url = `http://${ip}/api/${username}/lights/${deviceId}/state`;
-    axios.put(url, state).then((res) => {
-      getLights();
-    });
+    return axios.put(url, state);
   };
 
   return {
@@ -108,28 +110,14 @@ const useLights = () => {
   };
 };
 
-function hslToHex(h: number, s: number, l: number): string {
-  console.log(h, s, l);
-  const hDecimal = l / 100;
-  const a = (s * Math.min(hDecimal, 1 - hDecimal)) / 100;
-  const f = (n: number) => {
-    const k = (n + h / 30) % 12;
-    const color = hDecimal - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    // Convert to Hex and prefix with "0" if required
-    return Math.round(255 * color)
-      .toString(16)
-      .padStart(2, "0");
-  };
-  console.log(`#${f(0)}${f(8)}${f(4)}`);
-  return `#${f(0)}${f(8)}${f(4)}`;
-}
-
 const LightCard: FC<{
   deviceId: string;
   light: Light;
   onToggle: () => void;
-}> = ({ deviceId, light, onToggle }) => {
-  const { toggleLight, putLight } = useLights();
+  putLight: (deviceId: string, state: Partial<Light["state"]>) => Promise<any>;
+  refresh: () => void;
+}> = ({ deviceId, light, onToggle, putLight, refresh }) => {
+  // const { toggleLight, putLight } = useLights();
   const [color, setColor] = useState<string>("#fff");
   return (
     <Card>
@@ -142,11 +130,11 @@ const LightCard: FC<{
         </HStack>
       </CardHeader>
       <CardBody
-        bg={hslToHex(
-          Math.round((light.state.hue / 65535) * 360),
-          (light.state.sat / 254) * 100,
-          (light.state.bri / 254) * 100
-        )}
+        //bg={color}
+        // bg={`hsl(${(light.state.hue / 65535) * 360}, 100%, 50%)`}
+        bg={`hsl(${(light.state.hue / 65535) * 360}, ${
+          (light.state.sat / 254) * 100
+        }%, ${(light.state.bri / 254) * 100}%)`}
       >
         <Flex justifyContent="space-between" alignItems="center">
           <Stack>
@@ -155,18 +143,16 @@ const LightCard: FC<{
                 h: (light.state.hue / 65535) * 360,
                 s: 254,
                 l: 254,
-                // s: light.state.sat,
-                // l: light.state.bri,
               }}
               onChangeComplete={(color) => {
-                console.log(color);
                 putLight(deviceId, {
-                  // hue: 32000,
                   hue: Math.round((color.hsl.h / 360) * 65535),
                   // sat: 254,
                   // bri: 254,
+                }).then(() => {
+                  setColor(color.hex);
+                  refresh();
                 });
-                // setColor(color.hex);
               }}
             />
           </Stack>
@@ -202,7 +188,13 @@ const Home: FC = () => {
                 light={value}
                 key={key}
                 onToggle={() => {
-                  toggleLight(key);
+                  toggleLight(key).then(() => {
+                    getLights();
+                  });
+                }}
+                putLight={putLight}
+                refresh={() => {
+                  getLights();
                 }}
               />
             );
