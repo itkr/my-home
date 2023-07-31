@@ -19,57 +19,7 @@ import {
 import { HuePicker, AlphaPicker } from "react-color";
 import { FC, useEffect, useState } from "react";
 import axios from "axios";
-
-type Light = {
-  name: string;
-  state: {
-    on: boolean;
-    bri: number;
-    hue: number;
-    sat: number;
-    effect: string;
-    xy: number[];
-    ct: number;
-    alert: string;
-    colormode: string;
-    mode: string;
-    reachable: boolean;
-  };
-  type: string;
-  modelid: string;
-  manufacturername: string;
-  productname: string;
-  capabilities: {
-    certified: boolean;
-    control: {
-      mindimlevel: number;
-      maxlumen: number;
-      colorgamuttype: string;
-      colorgamut: number[][];
-      ct: {
-        min: number;
-        max: number;
-      };
-    };
-    streaming: {
-      renderer: boolean;
-      proxy: boolean;
-    };
-  };
-  config: {
-    archetype: string;
-    function: string;
-    direction: string;
-    startup: {
-      mode: string;
-      configured: boolean;
-    };
-  };
-  uniqueid: string;
-  swversion: string;
-  swconfigid: string;
-  productid: string;
-};
+import { Light } from "./types";
 
 type Group = {
   name: string;
@@ -410,7 +360,7 @@ const LightCard: FC<{
       >
         <Stack>
           <HStack>
-            <Box>H</Box>
+            <Box>H </Box>
             <HuePicker
               width="100%"
               color={{ h: hue, s: 254, l: 254 }}
@@ -426,7 +376,7 @@ const LightCard: FC<{
             />
           </HStack>
           <HStack>
-            <Box>S</Box>
+            <Box>S </Box>
             <Slider
               min={0}
               max={254}
@@ -448,7 +398,7 @@ const LightCard: FC<{
             </Slider>
           </HStack>
           <HStack>
-            <Box>V</Box>
+            <Box>V </Box>
             <Slider
               min={0}
               max={254}
@@ -506,28 +456,28 @@ const Home: FC = () => {
   return (
     <Container paddingY={5}>
       <Stack spacing={5}>
-        <Heading as="h2">Lights</Heading>
+        <Heading as="h2"> Lights </Heading>
         <Stack spacing={5}>
           {Object.entries(lights).map(([key, value]) => {
             return <LightCard deviceId={key} defaultLight={value} key={key} />;
           })}
         </Stack>
-        <Heading as="h2">Groups</Heading>
+        <Heading as="h2"> Groups </Heading>
         <Stack spacing={5}>
           {Object.entries(groups).map(([key, value]) => {
             return (
               <Box key={key}>
-                {value.name} ({value.state.all_on ? "on" : "off"})
+                {value.name}({value.state.all_on ? "on" : "off"})
               </Box>
             );
           })}
         </Stack>
-        <Heading as="h2">Schedules</Heading>
+        <Heading as="h2"> Schedules </Heading>
         <Stack spacing={5}>
           {Object.entries(schedules).map(([key, value]) => {
             return (
               <Box key={key}>
-                {value.name} ({value.status})
+                {value.name}({value.status})
               </Box>
             );
           })}
