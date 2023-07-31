@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Box,
   Card,
   CardBody,
   CardFooter,
@@ -66,12 +67,241 @@ type Light = {
   productid: string;
 };
 
+type Group = {
+  name: string;
+  lights: string[];
+  sensors: string[];
+  type: string;
+  state: {
+    all_on: boolean;
+    any_on: boolean;
+  };
+  recycle: boolean;
+  class: string;
+  action: {
+    on: boolean;
+    bri: number;
+    hue: number;
+    sat: number;
+    effect: string;
+    xy: number[];
+    ct: number;
+    alert: string;
+    colormode: string;
+  };
+};
+
+type Schedule = {
+  name: string;
+  description: string;
+  command: {
+    address: string;
+    body: {
+      scene: string;
+    };
+    method: string;
+  };
+  status: string;
+  time: string;
+  localtime: string;
+  created: string;
+  autodelete: boolean;
+  starttime: string;
+};
+
+type Sensor = {
+  name: string;
+  type: string;
+  modelid: string;
+  manufacturername: string;
+  swversion: string;
+  uniqueid: string;
+  recycle: boolean;
+  state: {
+    daylight: boolean;
+    lastupdated: string;
+  };
+  config: {
+    on: boolean;
+    long: string;
+    lat: string;
+    sunriseoffset: number;
+    sunsetoffset: number;
+  };
+  capabilities: {
+    certified: boolean;
+    primary: boolean;
+    inputs: [
+      {
+        repeatintervals: number[];
+        events: [
+          {
+            buttonevent: number;
+            eventtype: string;
+          }
+        ];
+      }
+    ];
+  };
+};
+
+type Scene = {
+  name: string;
+  lights: string[];
+  owner: string;
+  recycle: boolean;
+  locked: boolean;
+  appdata: {
+    version: number;
+    data: string;
+  };
+  picture: string;
+  lastupdated: string;
+  version: number;
+};
+
+type Rule = {
+  name: string;
+  owner: string;
+  created: string;
+  lasttriggered: string;
+  timestriggered: number;
+  status: string;
+  conditions: [
+    {
+      address: string;
+      operator: string;
+      value: string;
+    }
+  ];
+  actions: [
+    {
+      address: string;
+      method: string;
+      body: {
+        scene: string;
+      };
+    }
+  ];
+};
+
+type ResourceLink = {
+  name: string;
+  description: string;
+  type: string;
+  classid: number;
+  owner: string;
+  links: string[];
+};
+
+type Capabilities = {
+  lights: {
+    available: number;
+    total: number;
+  };
+  sensors: {
+    available: number;
+    total: number;
+  };
+  groups: {
+    available: number;
+    total: number;
+  };
+  scenes: {
+    available: number;
+    total: number;
+  };
+  rules: {
+    available: number;
+    total: number;
+  };
+  schedules: {
+    available: number;
+    total: number;
+  };
+  resourcelinks: {
+    available: number;
+    total: number;
+  };
+};
+
+type Config = {
+  name: string;
+  zigbeechannel: number;
+  bridgeid: string;
+  mac: string;
+  dhcp: boolean;
+  ipaddress: string;
+  netmask: string;
+  gateway: string;
+  proxyaddress: string;
+  proxyport: number;
+  UTC: string;
+  localtime: string;
+  timezone: string;
+  modelid: string;
+  datastoreversion: string;
+  swversion: string;
+  apiversion: string;
+  swupdate: {
+    updatestate: number;
+    checkforupdate: boolean;
+    devicetypes: {
+      bridge: boolean;
+      lights: number[];
+      sensors: number[];
+    };
+    url: string;
+    text: string;
+    notify: boolean;
+  };
+  linkbutton: boolean;
+  portalservices: boolean;
+  portalconnection: string;
+  portalstate: {
+    signedon: boolean;
+    incoming: boolean;
+    outgoing: boolean;
+    communication: string;
+  };
+  factorynew: boolean;
+  replacesbridgeid: string;
+  backup: {
+    status: string;
+    errorcode: number;
+  };
+  starterkitid: string;
+  whitelist: {
+    [key: string]: {
+      "last use date": string;
+      "create date": string;
+      name: string;
+    };
+  };
+};
+
 const useLights = () => {
   const ip = "192.168.1.2";
   const username = "9cjWI194Z58UwXDBKww9SMlZLrLH-0k01Gdjr1hv";
   const [lights, setLights] = useState<Record<string, Light>>({});
+  const [groups, setGroups] = useState<Record<string, Group>>({});
+  const [schedules, setSchedules] = useState<Record<string, Schedule>>({});
 
-  const getLights = async (): Promise<any> => {
+  const listSchedules = async (): Promise<any> => {
+    const url = `http://${ip}/api/${username}/schedules`;
+    return await axios.get(url).then((res) => {
+      setSchedules(res.data);
+    });
+  };
+
+  const listGroups = async (): Promise<any> => {
+    const url = `http://${ip}/api/${username}/groups`;
+    return await axios.get(url).then((res) => {
+      setGroups(res.data);
+    });
+  };
+
+  const listLights = async (): Promise<any> => {
     const url = `http://${ip}/api/${username}/lights`;
     return await axios.get(url).then((res) => {
       setLights(res.data);
@@ -99,10 +329,14 @@ const useLights = () => {
   };
 
   return {
-    lights,
     getLight,
-    getLights,
+    groups,
+    lights,
+    listGroups,
+    listLights,
+    listSchedules,
     putLight,
+    schedules,
     toggleLight,
   };
 };
@@ -177,19 +411,50 @@ const LightCard: FC<{
 };
 
 const Home: FC = () => {
-  const { lights, getLights, toggleLight, putLight } = useLights();
+  const {
+    groups,
+    lights,
+    listGroups,
+    listLights,
+    putLight,
+    toggleLight,
+    schedules,
+    listSchedules,
+  } = useLights();
 
   useEffect(() => {
-    getLights();
+    listLights();
+    listGroups();
+    listSchedules();
   }, []);
 
   return (
     <Container paddingY={3}>
       <Stack spacing={3}>
-        <Heading as="h2"> Hello </Heading>
+        <Heading as="h2">Lights</Heading>
         <Stack spacing={3}>
           {Object.entries(lights).map(([key, value]) => {
             return <LightCard deviceId={key} defaultLight={value} key={key} />;
+          })}
+        </Stack>
+        <Heading as="h2">Groups</Heading>
+        <Stack spacing={3}>
+          {Object.entries(groups).map(([key, value]) => {
+            return (
+              <Box key={key}>
+                {value.name} ({value.state.all_on ? "on" : "off"})
+              </Box>
+            );
+          })}
+        </Stack>
+        <Heading as="h2">Schedules</Heading>
+        <Stack spacing={3}>
+          {Object.entries(schedules).map(([key, value]) => {
+            return (
+              <Box key={key}>
+                {value.name} ({value.status})
+              </Box>
+            );
           })}
         </Stack>
       </Stack>
