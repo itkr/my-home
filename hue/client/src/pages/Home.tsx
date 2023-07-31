@@ -345,15 +345,37 @@ const useLights = () => {
   };
 };
 
+function hsvToHsl(h: number, s: number, v: number) {
+  var l = ((2 - s) * v) / 2;
+  if (l != 0) {
+    if (l == 1) {
+      s = 0;
+    } else if (l < 0.5) {
+      s = (s * v) / (l * 2);
+    } else {
+      s = (s * v) / (2 - l * 2);
+    }
+  }
+  // return [h, s, l];
+  return `hsl(${h}, ${s * 100}%, ${l * 100}%)`;
+}
+
 const LightCard: FC<{
   deviceId: string;
   defaultLight: Light;
 }> = ({ deviceId, defaultLight }) => {
   const { putLight, getLight, toggleLight } = useLights();
   const [light, setLight] = useState<Light>(defaultLight);
-  const [hex, setHex] = useState<string>("#fff");
   const [hue, setHue] = useState<number>(
     (defaultLight.state.hue / 65535) * 360
+  );
+  const [saturation, setSaturation] = useState<number>(
+    // (defaultLight.state.sat / 254) * 100
+    defaultLight.state.sat
+  );
+  const [brightness, setBrightness] = useState<number>(
+    // (defaultLight.state.bri / 254) * 100
+    defaultLight.state.bri
   );
 
   const refresh = async () => {
@@ -376,14 +398,7 @@ const LightCard: FC<{
           </Heading>
         </HStack>
       </CardHeader>
-      <CardBody
-        // bg={hex}
-        // bg={`hsl(${(light.state.hue / 65535) * 360}, 100%, 50%)`}
-        // hsv?
-        bg={`hsl(${(light.state.hue / 65535) * 360}, ${
-          (light.state.sat / 254) * 100
-        }%, ${(light.state.bri / 254) * 100}%)`}
-      >
+      <CardBody bg={hsvToHsl(hue, saturation / 254, brightness / 254)}>
         <Flex justifyContent="space-between" alignItems="center">
           <Stack>
             <HStack>
@@ -393,7 +408,6 @@ const LightCard: FC<{
                 onChange={(color) => {
                   if (!light.state.on) return;
                   setHue(color.hsl.h);
-                  setHex(color.hex);
                 }}
                 onChangeComplete={(color) => {
                   putLight(deviceId, {
@@ -407,11 +421,15 @@ const LightCard: FC<{
               <Slider
                 min={0}
                 max={254}
-                value={light.state.sat}
+                // value={light.state.sat}
+                value={saturation}
                 onChange={(value) => {
-                  putLight(deviceId, { sat: value }).then(() => {
-                    refresh();
-                  });
+                  if (!light.state.on) return;
+                  setSaturation(value);
+                  putLight(deviceId, { sat: value }).then((data) => {});
+                }}
+                onChangeEnd={() => {
+                  refresh();
                 }}
               >
                 <SliderTrack>
@@ -425,11 +443,15 @@ const LightCard: FC<{
               <Slider
                 min={0}
                 max={254}
-                value={light.state.bri}
+                // value={light.state.bri}
+                value={brightness}
                 onChange={(value) => {
-                  putLight(deviceId, { bri: value }).then(() => {
-                    refresh();
-                  });
+                  if (!light.state.on) return;
+                  setBrightness(value);
+                  putLight(deviceId, { bri: value }).then(() => {});
+                }}
+                onChangeEnd={() => {
+                  refresh();
                 }}
               >
                 <SliderTrack>
@@ -442,11 +464,6 @@ const LightCard: FC<{
           <Switch
             isChecked={light.state.on}
             onChange={async () => {
-              console.log(
-                `${light.state.hue}, ${(light.state.sat / 254) * 100}%, ${
-                  (light.state.bri / 254) * 100
-                }%`
-              );
               await toggleLight(deviceId).then(async () => {
                 await refresh();
               });
