@@ -389,7 +389,10 @@ const LightCard: FC<{
   }, []);
 
   return (
-    <Card>
+    <Card
+      bg={light.state.on ? "white" : "gray.700"}
+      color={light.state.on ? "black" : "white"}
+    >
       <CardHeader>
         <HStack spacing={3}>
           <Avatar size="sm" name={light.name} bg="gray.500" />
@@ -398,80 +401,86 @@ const LightCard: FC<{
           </Heading>
         </HStack>
       </CardHeader>
-      <CardBody bg={hsvToHsl(hue, saturation / 254, brightness / 254)}>
-        <Flex justifyContent="space-between" alignItems="center">
-          <Stack>
-            <HStack>
-              <Box>H</Box>
-              <HuePicker
-                color={{ h: hue, s: 254, l: 254 }}
-                onChange={(color) => {
-                  if (!light.state.on) return;
-                  setHue(color.hsl.h);
-                }}
-                onChangeComplete={(color) => {
-                  putLight(deviceId, {
-                    hue: Math.round((color.hsl.h / 360) * 65535),
-                  });
-                }}
-              />
-            </HStack>
-            <HStack>
-              <Box>S</Box>
-              <Slider
-                min={0}
-                max={254}
-                // value={light.state.sat}
-                value={saturation}
-                onChange={(value) => {
-                  if (!light.state.on) return;
-                  setSaturation(value);
-                  putLight(deviceId, { sat: value }).then((data) => {});
-                }}
-                onChangeEnd={() => {
-                  refresh();
-                }}
-              >
-                <SliderTrack>
-                  <SliderFilledTrack />
-                </SliderTrack>
-                <SliderThumb />
-              </Slider>
-            </HStack>
-            <HStack>
-              <Box>V</Box>
-              <Slider
-                min={0}
-                max={254}
-                // value={light.state.bri}
-                value={brightness}
-                onChange={(value) => {
-                  if (!light.state.on) return;
-                  setBrightness(value);
-                  putLight(deviceId, { bri: value }).then(() => {});
-                }}
-                onChangeEnd={() => {
-                  refresh();
-                }}
-              >
-                <SliderTrack>
-                  <SliderFilledTrack />
-                </SliderTrack>
-                <SliderThumb />
-              </Slider>
-            </HStack>
-          </Stack>
-          <Switch
-            isChecked={light.state.on}
-            onChange={async () => {
-              await toggleLight(deviceId).then(async () => {
-                await refresh();
-              });
-            }}
-          />
-        </Flex>
+      <CardBody
+        bg={
+          light.state.on
+            ? hsvToHsl(hue, saturation / 254, brightness / 254)
+            : "gray.500"
+        }
+      >
+        <Stack>
+          <HStack>
+            <Box>H</Box>
+            <HuePicker
+              width="100%"
+              color={{ h: hue, s: 254, l: 254 }}
+              onChange={(color) => {
+                if (!light.state.on) return;
+                setHue(color.hsl.h);
+              }}
+              onChangeComplete={(color) => {
+                putLight(deviceId, {
+                  hue: Math.round((color.hsl.h / 360) * 65535),
+                });
+              }}
+            />
+          </HStack>
+          <HStack>
+            <Box>S</Box>
+            <Slider
+              min={0}
+              max={254}
+              // value={light.state.sat}
+              value={saturation}
+              onChange={(value) => {
+                if (!light.state.on) return;
+                setSaturation(value);
+                putLight(deviceId, { sat: value }).then((data) => {});
+              }}
+              onChangeEnd={() => {
+                refresh();
+              }}
+            >
+              <SliderTrack>
+                <SliderFilledTrack />
+              </SliderTrack>
+              <SliderThumb />
+            </Slider>
+          </HStack>
+          <HStack>
+            <Box>V</Box>
+            <Slider
+              min={0}
+              max={254}
+              // value={light.state.bri}
+              value={brightness}
+              onChange={(value) => {
+                if (!light.state.on) return;
+                setBrightness(value);
+                putLight(deviceId, { bri: value }).then(() => {});
+              }}
+              onChangeEnd={() => {
+                refresh();
+              }}
+            >
+              <SliderTrack>
+                <SliderFilledTrack />
+              </SliderTrack>
+              <SliderThumb />
+            </Slider>
+          </HStack>
+        </Stack>
       </CardBody>
-      <CardFooter></CardFooter>
+      <CardFooter>
+        <Switch
+          isChecked={light.state.on}
+          onChange={async () => {
+            await toggleLight(deviceId).then(async () => {
+              await refresh();
+            });
+          }}
+        />
+      </CardFooter>
     </Card>
   );
 };
@@ -495,16 +504,16 @@ const Home: FC = () => {
   }, []);
 
   return (
-    <Container paddingY={3}>
-      <Stack spacing={3}>
+    <Container paddingY={5}>
+      <Stack spacing={5}>
         <Heading as="h2">Lights</Heading>
-        <Stack spacing={3}>
+        <Stack spacing={5}>
           {Object.entries(lights).map(([key, value]) => {
             return <LightCard deviceId={key} defaultLight={value} key={key} />;
           })}
         </Stack>
         <Heading as="h2">Groups</Heading>
-        <Stack spacing={3}>
+        <Stack spacing={5}>
           {Object.entries(groups).map(([key, value]) => {
             return (
               <Box key={key}>
@@ -514,7 +523,7 @@ const Home: FC = () => {
           })}
         </Stack>
         <Heading as="h2">Schedules</Heading>
-        <Stack spacing={3}>
+        <Stack spacing={5}>
           {Object.entries(schedules).map(([key, value]) => {
             return (
               <Box key={key}>
