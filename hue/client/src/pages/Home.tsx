@@ -1,6 +1,5 @@
 import {
   Avatar,
-  Box,
   Card,
   CardBody,
   CardFooter,
@@ -13,7 +12,6 @@ import {
   Switch,
 } from "@chakra-ui/react";
 import { HuePicker, AlphaPicker } from "react-color";
-// import { api, v3 } from "node-hue-api";
 import { FC, useEffect, useState } from "react";
 import axios from "axios";
 
@@ -73,32 +71,31 @@ const useLights = () => {
   const username = "9cjWI194Z58UwXDBKww9SMlZLrLH-0k01Gdjr1hv";
   const [lights, setLights] = useState<Record<string, Light>>({});
 
-  const getLights = (): Promise<any> => {
+  const getLights = async (): Promise<any> => {
     const url = `http://${ip}/api/${username}/lights`;
-    return axios.get(url).then((res) => {
+    return await axios.get(url).then((res) => {
       setLights(res.data);
     });
   };
 
-  const getLight = (deviceId: string): Promise<any> => {
+  const getLight = async (deviceId: string): Promise<any> => {
     const url = `http://${ip}/api/${username}/lights/${deviceId}`;
-    return axios.get(url).then((res) => {
+    return await axios.get(url).then((res) => {
       setLights((prev) => ({ ...prev, [deviceId]: res.data }));
+      return res.data;
     });
   };
 
-  const toggleLight = (deviceId: string): Promise<any> => {
-    return putLight(deviceId, { on: !lights[deviceId].state.on });
-    // const url = `http://${ip}/api/${username}/lights/${deviceId}/state`;
-    // return axios.put(url, { on: !lights[deviceId].state.on });
+  const toggleLight = async (deviceId: string): Promise<any> => {
+    return await putLight(deviceId, { on: !lights[deviceId].state.on });
   };
 
-  const putLight = (
+  const putLight = async (
     deviceId: string,
     state: Partial<Light["state"]>
   ): Promise<any> => {
     const url = `http://${ip}/api/${username}/lights/${deviceId}/state`;
-    return axios.put(url, state);
+    return await axios.put(url, state);
   };
 
   return {
@@ -112,13 +109,25 @@ const useLights = () => {
 
 const LightCard: FC<{
   deviceId: string;
-  light: Light;
-  onToggle: () => void;
-  putLight: (deviceId: string, state: Partial<Light["state"]>) => Promise<any>;
-  refresh: () => void;
-}> = ({ deviceId, light, onToggle, putLight, refresh }) => {
-  // const { toggleLight, putLight } = useLights();
-  const [color, setColor] = useState<string>("#fff");
+  defaultLight: Light;
+}> = ({ deviceId, defaultLight }) => {
+  const { putLight, getLight, toggleLight } = useLights();
+  const [light, setLight] = useState<Light>(defaultLight);
+  const [hex, setHex] = useState<string>("#fff");
+  const [hue, setHue] = useState<number>(
+    (defaultLight.state.hue / 65535) * 360
+  );
+
+  const refresh = async () => {
+    return await getLight(deviceId).then(async (light) => {
+      await setLight(light);
+    });
+  };
+
+  useEffect(() => {
+    refresh();
+  }, []);
+
   return (
     <Card>
       <CardHeader>
@@ -130,7 +139,7 @@ const LightCard: FC<{
         </HStack>
       </CardHeader>
       <CardBody
-        //bg={color}
+        // bg={hex}
         // bg={`hsl(${(light.state.hue / 65535) * 360}, 100%, 50%)`}
         bg={`hsl(${(light.state.hue / 65535) * 360}, ${
           (light.state.sat / 254) * 100
@@ -139,27 +148,25 @@ const LightCard: FC<{
         <Flex justifyContent="space-between" alignItems="center">
           <Stack>
             <HuePicker
-              color={{
-                h: (light.state.hue / 65535) * 360,
-                s: 254,
-                l: 254,
+              color={{ h: hue, s: 254, l: 254 }}
+              onChange={(color) => {
+                if (!light.state.on) return;
+                setHue(color.hsl.h);
+                setHex(color.hex);
               }}
               onChangeComplete={(color) => {
                 putLight(deviceId, {
                   hue: Math.round((color.hsl.h / 360) * 65535),
-                  // sat: 254,
-                  // bri: 254,
-                }).then(() => {
-                  setColor(color.hex);
-                  refresh();
                 });
               }}
             />
           </Stack>
           <Switch
             isChecked={light.state.on}
-            onChange={() => {
-              onToggle();
+            onChange={async () => {
+              await toggleLight(deviceId).then(async () => {
+                await refresh();
+              });
             }}
           />
         </Flex>
@@ -182,22 +189,7 @@ const Home: FC = () => {
         <Heading as="h2"> Hello </Heading>
         <Stack spacing={3}>
           {Object.entries(lights).map(([key, value]) => {
-            return (
-              <LightCard
-                deviceId={key}
-                light={value}
-                key={key}
-                onToggle={() => {
-                  toggleLight(key).then(() => {
-                    getLights();
-                  });
-                }}
-                putLight={putLight}
-                refresh={() => {
-                  getLights();
-                }}
-              />
-            );
+            return <LightCard deviceId={key} defaultLight={value} key={key} />;
           })}
         </Stack>
       </Stack>
