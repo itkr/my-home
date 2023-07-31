@@ -1,4 +1,4 @@
-type Light = {
+export type Light = {
   name: string;
   state: {
     on: boolean;
@@ -48,5 +48,3 @@ type Light = {
   swconfigid: string;
   productid: string;
 };
-
-export type { Light };
