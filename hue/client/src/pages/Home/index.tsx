@@ -6,15 +6,18 @@ import {
   CardFooter,
   CardHeader,
   Container,
-  Stack,
-  Heading,
+  Flex,
   HStack,
-  Switch,
+  Heading,
+  IconButton,
   Slider,
-  SliderTrack,
   SliderFilledTrack,
+  SliderTrack,
+  Stack,
+  Switch,
   SliderThumb,
 } from "@chakra-ui/react";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import { HuePicker } from "react-color";
 import { FC, useEffect, useState } from "react";
 import axios from "axios";
@@ -105,14 +108,8 @@ const LightCard: FC<{
   const [hue, setHue] = useState<number>(
     (defaultLight.state.hue / 65535) * 360
   );
-  const [saturation, setSaturation] = useState<number>(
-    // (defaultLight.state.sat / 254) * 100
-    defaultLight.state.sat
-  );
-  const [brightness, setBrightness] = useState<number>(
-    // (defaultLight.state.bri / 254) * 100
-    defaultLight.state.bri
-  );
+  const [saturation, setSaturation] = useState<number>(defaultLight.state.sat);
+  const [brightness, setBrightness] = useState<number>(defaultLight.state.bri);
 
   const refresh = async () => {
     return await getLight(deviceId).then(async (light) => {
@@ -130,12 +127,18 @@ const LightCard: FC<{
       color={light.state.on ? "black" : "white"}
     >
       <CardHeader>
-        <HStack spacing={3}>
+        <Flex justifyContent="space-between" alignItems="center">
           <Avatar size="sm" name={light.name} bg="gray.500" />
           <Heading as="h3" size="md">
             {light.name}
           </Heading>
-        </HStack>
+          <IconButton
+            variant='ghost'
+            colorScheme='gray'
+            aria-label='See menu'
+            icon={<BsThreeDotsVertical />}
+          />
+        </Flex>
       </CardHeader>
       <CardBody
         bg={
@@ -146,7 +149,13 @@ const LightCard: FC<{
       >
         <Stack>
           <HStack>
-            <Box>H </Box>
+            <Box
+              bg="rgba(255,255,255,0.2)"
+              width="2em"
+              height="2em"
+              lineHeight="2em"
+              textAlign="center"
+            >H</Box>
             <HuePicker
               width="100%"
               color={{ h: hue, s: 254, l: 254 }}
@@ -162,16 +171,21 @@ const LightCard: FC<{
             />
           </HStack>
           <HStack>
-            <Box>S </Box>
+            <Box
+              bg="rgba(255,255,255,0.2)"
+              width="2em"
+              height="2em"
+              lineHeight="2em"
+              textAlign="center"
+            >S</Box>
             <Slider
               min={0}
               max={254}
-              // value={light.state.sat}
-              value={saturation}
+              defaultValue={light.state.sat}
               onChange={(value) => {
                 if (!light.state.on) return;
                 setSaturation(value);
-                putLight(deviceId, { sat: value }).then((data) => {});
+                putLight(deviceId, { sat: value });
               }}
               onChangeEnd={() => {
                 refresh();
@@ -184,16 +198,21 @@ const LightCard: FC<{
             </Slider>
           </HStack>
           <HStack>
-            <Box>V </Box>
+            <Box
+              bg="rgba(255,255,255,0.2)"
+              width="2em"
+              height="2em"
+              lineHeight="2em"
+              textAlign="center"
+            >V</Box>
             <Slider
               min={0}
               max={254}
-              // value={light.state.bri}
-              value={brightness}
+              defaultValue={light.state.bri}
               onChange={(value) => {
                 if (!light.state.on) return;
                 setBrightness(value);
-                putLight(deviceId, { bri: value }).then(() => {});
+                putLight(deviceId, { bri: value });
               }}
               onChangeEnd={() => {
                 refresh();
