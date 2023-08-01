@@ -21,6 +21,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { HuePicker } from "react-color";
 import { FC, useEffect, useState } from "react";
 import axios from "axios";
+import { hsvToHsl } from "@/utils/color";
 import { Light, Group, Schedule } from "./types";
 
 const useLights = () => {
@@ -84,21 +85,6 @@ const useLights = () => {
   };
 };
 
-function hsvToHsl(h: number, s: number, v: number) {
-  var l = ((2 - s) * v) / 2;
-  if (l != 0) {
-    if (l == 1) {
-      s = 0;
-    } else if (l < 0.5) {
-      s = (s * v) / (l * 2);
-    } else {
-      s = (s * v) / (2 - l * 2);
-    }
-  }
-  // return [h, s, l];
-  return `hsl(${h}, ${s * 100}%, ${l * 100}%)`;
-}
-
 const LightCard: FC<{
   deviceId: string;
   defaultLight: Light;
@@ -113,7 +99,7 @@ const LightCard: FC<{
 
   const refresh = async () => {
     return await getLight(deviceId).then(async (light) => {
-      await setLight(light);
+      setLight(light);
     });
   };
 
@@ -127,15 +113,15 @@ const LightCard: FC<{
       color={light.state.on ? "black" : "white"}
     >
       <CardHeader>
-        <Flex justifyContent="space-between" alignItems="center">
+        <Flex justifyContent="space-between" alignItems="center" gap={3}>
           <Avatar size="sm" name={light.name} bg="gray.500" />
-          <Heading as="h3" size="md">
+          <Heading as="h3" size="md" flex="1">
             {light.name}
           </Heading>
           <IconButton
-            variant='ghost'
-            colorScheme='gray'
-            aria-label='See menu'
+            variant="ghost"
+            colorScheme="gray"
+            aria-label="See menu"
             icon={<BsThreeDotsVertical />}
           />
         </Flex>
@@ -155,7 +141,9 @@ const LightCard: FC<{
               height="2em"
               lineHeight="2em"
               textAlign="center"
-            >H</Box>
+            >
+              H
+            </Box>
             <HuePicker
               width="100%"
               color={{ h: hue, s: 254, l: 254 }}
@@ -177,7 +165,9 @@ const LightCard: FC<{
               height="2em"
               lineHeight="2em"
               textAlign="center"
-            >S</Box>
+            >
+              S
+            </Box>
             <Slider
               min={0}
               max={254}
@@ -191,8 +181,16 @@ const LightCard: FC<{
                 refresh();
               }}
             >
-              <SliderTrack>
-                <SliderFilledTrack />
+              <SliderTrack
+                style={{
+                  background: `linear-gradient(to right, ${hsvToHsl(
+                    hue,
+                    0,
+                    brightness / 254
+                  )} 0%, ${hsvToHsl(hue, 1, brightness / 254)})`,
+                }}
+              >
+                <SliderFilledTrack bg="none" />
               </SliderTrack>
               <SliderThumb />
             </Slider>
@@ -204,7 +202,9 @@ const LightCard: FC<{
               height="2em"
               lineHeight="2em"
               textAlign="center"
-            >V</Box>
+            >
+              V
+            </Box>
             <Slider
               min={0}
               max={254}
@@ -218,8 +218,16 @@ const LightCard: FC<{
                 refresh();
               }}
             >
-              <SliderTrack>
-                <SliderFilledTrack />
+              <SliderTrack
+                style={{
+                  background: `linear-gradient(to right, ${hsvToHsl(
+                    hue,
+                    saturation / 254,
+                    0
+                  )}, ${hsvToHsl(hue, saturation / 254, 1)})`,
+                }}
+              >
+                <SliderFilledTrack bg="none" />
               </SliderTrack>
               <SliderThumb />
             </Slider>
@@ -246,8 +254,8 @@ const Home: FC = () => {
     lights,
     listGroups,
     listLights,
-    putLight,
-    toggleLight,
+    // putLight,
+    // toggleLight,
     schedules,
     listSchedules,
   } = useLights();
