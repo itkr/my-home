@@ -112,6 +112,8 @@ const LightCard: FC<{
   );
   const [saturation, setSaturation] = useState<number>(defaultLight.state.sat);
   const [brightness, setBrightness] = useState<number>(defaultLight.state.bri);
+  const [showSatTooltip, setShowSatTooltip] = useState<boolean>(false);
+  const [showBriTooltip, setShowBriTooltip] = useState<boolean>(false);
 
   const refresh = async () => {
     return await getLight(deviceId).then(async (light) => {
@@ -165,7 +167,7 @@ const LightCard: FC<{
               onChangeComplete={(color) => {
                 putLight(deviceId, {
                   hue: Math.round((color.hsl.h / 360) * 65535),
-                });
+                }).then(() => refresh());
               }}
             />
           </HStack>
@@ -181,10 +183,14 @@ const LightCard: FC<{
                 if (!light.state.on) return;
                 setSaturation(value);
                 putLight(deviceId, { sat: value });
+                setShowSatTooltip(true);
               }}
               onChangeEnd={() => {
                 refresh();
+                setShowSatTooltip(false);
               }}
+              onMouseEnter={() => setShowSatTooltip(true)}
+              onMouseLeave={() => setShowSatTooltip(false)}
             >
               <SliderTrack
                 style={{
@@ -201,7 +207,7 @@ const LightCard: FC<{
                 hasArrow
                 bg="gray.700"
                 placement="top"
-                isOpen={true}
+                isOpen={showSatTooltip}
                 label={`${Math.round((saturation / 254) * 100)}%`}
               >
                 <SliderThumb />
@@ -220,10 +226,14 @@ const LightCard: FC<{
                 if (!light.state.on) return;
                 setBrightness(value);
                 putLight(deviceId, { bri: value });
+                setShowBriTooltip(true);
               }}
               onChangeEnd={() => {
                 refresh();
+                setShowBriTooltip(false);
               }}
+              onMouseEnter={() => setShowBriTooltip(true)}
+              onMouseLeave={() => setShowBriTooltip(false)}
             >
               <SliderTrack
                 style={{
@@ -240,7 +250,7 @@ const LightCard: FC<{
                 hasArrow
                 bg="gray.700"
                 placement="top"
-                isOpen={true}
+                isOpen={showBriTooltip}
                 label={`${Math.round((brightness / 254) * 100)}%`}
               >
                 <SliderThumb />
