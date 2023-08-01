@@ -1,6 +1,9 @@
+import { FC, useEffect, useState, ReactNode } from "react";
 import {
   Avatar,
+  Tooltip,
   Box,
+  BoxProps,
   Card,
   CardBody,
   CardFooter,
@@ -19,7 +22,6 @@ import {
 } from "@chakra-ui/react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { HuePicker } from "react-color";
-import { FC, useEffect, useState } from "react";
 import axios from "axios";
 import { hsvToHsl } from "@/utils/color";
 import { Light, Group, Schedule } from "./types";
@@ -84,6 +86,20 @@ const useLights = () => {
     toggleLight,
   };
 };
+const SliderTitle: FC<{ children: ReactNode; props?: BoxProps }> = ({
+  children,
+  ...props
+}) => (
+  <Box
+    bg="rgba(255,255,255,0.2)"
+    width="2em"
+    height="2em"
+    lineHeight="2em"
+    textAlign="center"
+  >
+    {children}
+  </Box>
+);
 
 const LightCard: FC<{
   deviceId: string;
@@ -111,6 +127,8 @@ const LightCard: FC<{
     <Card
       bg={light.state.on ? "white" : "gray.700"}
       color={light.state.on ? "black" : "white"}
+      // style={{ transition: "all 0.2s ease-in-out" }}
+      opacity={light.state.reachable ? 1 : 0.5}
     >
       <CardHeader>
         <Flex justifyContent="space-between" alignItems="center" gap={3}>
@@ -134,19 +152,12 @@ const LightCard: FC<{
         }
       >
         <Stack>
+          {/* Hue */}
           <HStack>
-            <Box
-              bg="rgba(255,255,255,0.2)"
-              width="2em"
-              height="2em"
-              lineHeight="2em"
-              textAlign="center"
-            >
-              H
-            </Box>
+            <SliderTitle>H</SliderTitle>
             <HuePicker
               width="100%"
-              color={{ h: hue, s: 254, l: 254 }}
+              color={{ h: hue, s: 0, l: 0 }}
               onChange={(color) => {
                 if (!light.state.on) return;
                 setHue(color.hsl.h);
@@ -158,20 +169,14 @@ const LightCard: FC<{
               }}
             />
           </HStack>
+          {/* Saturation */}
           <HStack>
-            <Box
-              bg="rgba(255,255,255,0.2)"
-              width="2em"
-              height="2em"
-              lineHeight="2em"
-              textAlign="center"
-            >
-              S
-            </Box>
+            <SliderTitle>S</SliderTitle>
             <Slider
               min={0}
               max={254}
               defaultValue={light.state.sat}
+              value={saturation}
               onChange={(value) => {
                 if (!light.state.on) return;
                 setSaturation(value);
@@ -192,23 +197,25 @@ const LightCard: FC<{
               >
                 <SliderFilledTrack bg="none" />
               </SliderTrack>
-              <SliderThumb />
+              <Tooltip
+                hasArrow
+                bg="gray.700"
+                placement="top"
+                isOpen={true}
+                label={`${Math.round((saturation / 254) * 100)}%`}
+              >
+                <SliderThumb />
+              </Tooltip>
             </Slider>
           </HStack>
+          {/* Brightness */}
           <HStack>
-            <Box
-              bg="rgba(255,255,255,0.2)"
-              width="2em"
-              height="2em"
-              lineHeight="2em"
-              textAlign="center"
-            >
-              V
-            </Box>
+            <SliderTitle>V</SliderTitle>
             <Slider
               min={0}
               max={254}
               defaultValue={light.state.bri}
+              value={brightness}
               onChange={(value) => {
                 if (!light.state.on) return;
                 setBrightness(value);
@@ -229,7 +236,15 @@ const LightCard: FC<{
               >
                 <SliderFilledTrack bg="none" />
               </SliderTrack>
-              <SliderThumb />
+              <Tooltip
+                hasArrow
+                bg="gray.700"
+                placement="top"
+                isOpen={true}
+                label={`${Math.round((brightness / 254) * 100)}%`}
+              >
+                <SliderThumb />
+              </Tooltip>
             </Slider>
           </HStack>
         </Stack>
