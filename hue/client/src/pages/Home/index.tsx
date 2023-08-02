@@ -97,26 +97,26 @@ const LightCard: FC<{
                 <MenuItem
                   onClick={() => {
                     putLight(deviceId, { alert: "select" });
-                    // refresh();
+                    refresh();
                   }}
                 >
-                  Flash
+                  Flash {light.state.alert === "select" && "✓"}
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
                     putLight(deviceId, { alert: "lselect" });
-                    // refresh();
+                    refresh();
                   }}
                 >
-                  Flash for 30 seconds
+                  Flash for 30 seconds {light.state.alert === "lselect" && "✓"}
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
                     putLight(deviceId, { alert: "none" });
-                    // refresh();
+                    refresh();
                   }}
                 >
-                  No alert
+                  No alert {light.state.alert === "none" && "✓"}
                 </MenuItem>
               </MenuGroup>
               <MenuDivider />
@@ -127,15 +127,15 @@ const LightCard: FC<{
                     refresh();
                   }}
                 >
-                  Color loop
+                  Color loop {light.state.effect === "colorloop" && "✓"}
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
                     putLight(deviceId, { effect: "none" });
-                    // refresh();
+                    refresh();
                   }}
                 >
-                  No effect
+                  No effect {light.state.effect === "none" && "✓"}
                 </MenuItem>
               </MenuGroup>
             </MenuList>
