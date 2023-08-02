@@ -13,12 +13,19 @@ import {
   HStack,
   Heading,
   IconButton,
+  Menu,
+  MenuButton,
+  MenuDivider,
+  MenuGroup,
+  MenuItem,
+  MenuList,
+  Progress,
   Slider,
   SliderFilledTrack,
+  SliderThumb,
   SliderTrack,
   Stack,
   Switch,
-  SliderThumb,
 } from "@chakra-ui/react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { HuePicker } from "react-color";
@@ -76,12 +83,63 @@ const LightCard: FC<{
           <Heading as="h3" size="md" flex="1">
             {light.name}
           </Heading>
-          <IconButton
-            variant="ghost"
-            colorScheme="gray"
-            aria-label="See menu"
-            icon={<BsThreeDotsVertical />}
-          />
+          <Menu>
+            <MenuButton
+              as={IconButton}
+              variant="ghost"
+              icon={<BsThreeDotsVertical />}
+              colorScheme="gray"
+              color={light.state.on ? "black" : "white"}
+            />
+            <MenuList color="black">
+              {/* alert */}
+              <MenuGroup title="Alert">
+                <MenuItem
+                  onClick={() => {
+                    putLight(deviceId, { alert: "select" });
+                    // refresh();
+                  }}
+                >
+                  Flash
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    putLight(deviceId, { alert: "lselect" });
+                    // refresh();
+                  }}
+                >
+                  Flash for 30 seconds
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    putLight(deviceId, { alert: "none" });
+                    // refresh();
+                  }}
+                >
+                  No alert
+                </MenuItem>
+              </MenuGroup>
+              <MenuDivider />
+              <MenuGroup title="Effect">
+                <MenuItem
+                  onClick={() => {
+                    putLight(deviceId, { effect: "colorloop" });
+                    refresh();
+                  }}
+                >
+                  Color loop
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    putLight(deviceId, { effect: "none" });
+                    // refresh();
+                  }}
+                >
+                  No effect
+                </MenuItem>
+              </MenuGroup>
+            </MenuList>
+          </Menu>
         </Flex>
       </CardHeader>
       <CardBody
@@ -198,6 +256,7 @@ const LightCard: FC<{
         </Stack>
       </CardBody>
       <CardFooter>
+        <Progress size="xs" isIndeterminate />
         <Switch
           isChecked={light.state.on}
           onChange={async () => {
