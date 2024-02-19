@@ -1,7 +1,6 @@
 import { FC, useEffect, useState } from "react";
 import {
   Avatar,
-  Tooltip,
   Box,
   BoxProps,
   Card,
@@ -26,10 +25,12 @@ import {
   SliderTrack,
   Stack,
   Switch,
+  Tooltip,
 } from "@chakra-ui/react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { HuePicker } from "react-color";
 import { hsvToHsl } from "@/utils/color";
+import { HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME } from "@/config";
 import { Light } from "./types";
 import { useLights } from "./hooks";
 
@@ -50,7 +51,10 @@ const LightCard: FC<{
   deviceId: string;
   defaultLight: Light;
 }> = ({ deviceId, defaultLight }) => {
-  const { putLight, getLight, toggleLight } = useLights();
+  const { putLight, getLight, toggleLight } = useLights(
+    HUE_BRIDGE_IP,
+    HUE_BRIDGE_USERNAME
+  );
   const [light, setLight] = useState<Light>(defaultLight);
   const [hue, setHue] = useState<number>(
     (defaultLight.state.hue / 65535) * 360
@@ -280,7 +284,7 @@ const Home: FC = () => {
     // toggleLight,
     schedules,
     listSchedules,
-  } = useLights();
+  } = useLights(HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME);
 
   useEffect(() => {
     listLights();

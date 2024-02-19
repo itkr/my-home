@@ -1,13 +1,8 @@
-import { FC, useEffect, useState, ReactNode } from "react";
-import { BsThreeDotsVertical } from "react-icons/bs";
-import { HuePicker } from "react-color";
+import { useState } from "react";
 import axios from "axios";
-import { hsvToHsl } from "@/utils/color";
 import { Light, Group, Schedule } from "../types";
 
-export const useLights = () => {
-  const ip = "192.168.1.2";
-  const username = "9cjWI194Z58UwXDBKww9SMlZLrLH-0k01Gdjr1hv";
+export const useLights = (ip: string, username: string) => {
   const [lights, setLights] = useState<Record<string, Light>>({});
   const [groups, setGroups] = useState<Record<string, Group>>({});
   const [schedules, setSchedules] = useState<Record<string, Schedule>>({});
