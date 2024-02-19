@@ -2,6 +2,7 @@ import reportWebVitals from "@/reportWebVitals";
 import React, { FC } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 // font
 // import "@fontsource/noto-sans-jp/400.css";
@@ -15,18 +16,22 @@ import { ChakraProvider } from "@chakra-ui/react";
 import Home from "@/pages/Home";
 import NotFound from "@/pages/misc/404";
 
+const queryClient = new QueryClient();
+
 const Router: FC = () => {
   return (
     <React.StrictMode>
       <ChakraProvider theme={theme}>
-        <BrowserRouter>
-          {/* <ScrollToTop /> */}
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="*" element={<NotFound />} />
-            <Route path="/404" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            {/* <ScrollToTop /> */}
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="*" element={<NotFound />} />
+              <Route path="/404" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </QueryClientProvider>
       </ChakraProvider>
     </React.StrictMode>
   );

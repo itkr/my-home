@@ -278,18 +278,18 @@ const Home: FC = () => {
   const {
     groups,
     lights,
-    listGroups,
-    listLights,
+    // listGroups,
+    // listLights,
     // putLight,
     // toggleLight,
     schedules,
-    listSchedules,
+    // listSchedules,
   } = useLights(HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME);
 
   useEffect(() => {
-    listLights();
-    listGroups();
-    listSchedules();
+    // listLights();
+    // listGroups();
+    // listSchedules();
   }, []);
 
   return (
@@ -297,13 +297,13 @@ const Home: FC = () => {
       <Stack spacing={5}>
         <Heading as="h2"> Lights </Heading>
         <Stack spacing={5}>
-          {Object.entries(lights).map(([key, value]) => {
+          {Object.entries(lights || {}).map(([key, value]) => {
             return <LightCard deviceId={key} defaultLight={value} key={key} />;
           })}
         </Stack>
         <Heading as="h2"> Groups </Heading>
         <Stack spacing={5}>
-          {Object.entries(groups).map(([key, value]) => {
+          {Object.entries(groups || {}).map(([key, value]) => {
             return (
               <Box key={key}>
                 {value.name}({value.state.all_on ? "on" : "off"})
@@ -313,7 +313,7 @@ const Home: FC = () => {
         </Stack>
         <Heading as="h2"> Schedules </Heading>
         <Stack spacing={5}>
-          {Object.entries(schedules).map(([key, value]) => {
+          {Object.entries(schedules || {}).map(([key, value]) => {
             return (
               <Box key={key}>
                 {value.name}({value.status})

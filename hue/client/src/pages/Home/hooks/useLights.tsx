@@ -1,45 +1,44 @@
-import { useState } from "react";
+import { useQuery } from "react-query";
 import axios from "axios";
 import { Light, Group, Schedule } from "../types";
 
 export const useLights = (ip: string, username: string) => {
-  const [lights, setLights] = useState<Record<string, Light>>({});
-  const [groups, setGroups] = useState<Record<string, Group>>({});
-  const [schedules, setSchedules] = useState<Record<string, Schedule>>({});
-
-  const listSchedules = async (): Promise<any> => {
+  const listSchedules = async (): Promise<Record<string, Schedule>> => {
     const url = `http://${ip}/api/${username}/schedules`;
     return await axios.get(url).then((res) => {
-      setSchedules(res.data);
-    });
-  };
-
-  const listGroups = async (): Promise<any> => {
-    const url = `http://${ip}/api/${username}/groups`;
-    return await axios.get(url).then((res) => {
-      setGroups(res.data);
-    });
-  };
-
-  const listLights = async (): Promise<any> => {
-    const url = `http://${ip}/api/${username}/lights`;
-    return await axios.get(url).then((res) => {
-      setLights(res.data);
-    });
-  };
-
-  const getLight = async (deviceId: string): Promise<any> => {
-    const url = `http://${ip}/api/${username}/lights/${deviceId}`;
-    return await axios.get(url).then((res) => {
-      setLights((prev) => ({ ...prev, [deviceId]: res.data }));
       return res.data;
     });
   };
 
-  const toggleLight = async (deviceId: string): Promise<any> => {
-    return await putLight(deviceId, { on: !lights[deviceId].state.on });
+  const listGroups = async (): Promise<Record<string, Group>> => {
+    const url = `http://${ip}/api/${username}/groups`;
+    return await axios.get(url).then((res) => {
+      return res.data;
+    });
   };
 
+  const listLights = async (): Promise<Record<string, Light>> => {
+    const url = `http://${ip}/api/${username}/lights`;
+    return await axios.get(url).then((res) => {
+      return res.data;
+    });
+  };
+
+  const getLight = async (deviceId: string): Promise<Light> => {
+    const url = `http://${ip}/api/${username}/lights/${deviceId}`;
+    return await axios.get(url).then((res) => {
+      return res.data;
+    });
+  };
+
+  // TODO: 返り値の型を定義する
+  const toggleLight = async (deviceId: string): Promise<any> => {
+    // return await putLight(deviceId, { on: !lights[deviceId].state.on });
+    const light = await getLight(deviceId);
+    return await putLight(deviceId, { on: !light.state.on });
+  };
+
+  // TODO: 返り値の型を定義する
   const putLight = async (
     deviceId: string,
     state: Partial<Light["state"]>
@@ -48,13 +47,29 @@ export const useLights = (ip: string, username: string) => {
     return await axios.put(url, state);
   };
 
+  const { data: lights, refetch: refetchLights } = useQuery({
+    queryKey: "lights",
+    queryFn: listLights,
+    // refetchInterval: 1000,
+  });
+
+  const { data: schedules } = useQuery({
+    queryKey: "schedules",
+    queryFn: listSchedules,
+  });
+
+  const { data: groups } = useQuery({
+    queryKey: "groups",
+    queryFn: listGroups,
+  });
+
   return {
     getLight,
     groups,
     lights,
-    listGroups,
-    listLights,
-    listSchedules,
+    // listGroups,
+    // listLights,
+    // listSchedules,
     putLight,
     schedules,
     toggleLight,
