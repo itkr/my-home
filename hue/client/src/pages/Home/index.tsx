@@ -32,7 +32,7 @@ import { HuePicker } from "react-color";
 import { hsvToHsl } from "@/utils/color";
 import { HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME } from "@/config";
 import { Light } from "./types";
-import { useLights } from "./hooks";
+import { useLights, useLightsQuery } from "./hooks";
 
 const SliderTitle: FC<BoxProps> = ({ children, ...props }) => (
   <Box
@@ -286,6 +286,8 @@ const Home: FC = () => {
     // listSchedules,
   } = useLights(HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME);
 
+  const { data: lightsData } = useLightsQuery();
+
   useEffect(() => {
     // listLights();
     // listGroups();
@@ -297,7 +299,7 @@ const Home: FC = () => {
       <Stack spacing={5}>
         <Heading as="h2"> Lights </Heading>
         <Stack spacing={5}>
-          {Object.entries(lights || {}).map(([key, value]) => {
+          {Object.entries(lightsData || {}).map(([key, value]) => {
             return <LightCard deviceId={key} defaultLight={value} key={key} />;
           })}
         </Stack>
