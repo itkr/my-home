@@ -5,63 +5,40 @@ import {
   useMutation,
   useQuery,
 } from "react-query";
-import axios from "axios";
-import { HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME, queryClient } from "@/config";
-import { Light, Group, Schedule } from "../types";
+import { queryClient } from "@/config";
+import { Light } from "../types";
+import {
+  getLight,
+  listLights,
+  putLight,
+  // toggleLightState,
+  toggleLight,
+  // putLightState,
+  listSchedules,
+  listGroups,
+} from "../api/hueBridge";
 
-// UseMutationOptions
 type MutationOptions = {
+  // UseMutationOptions
   onMutate?: (variables: any) => any;
   onError?: (error: any, variables: any, context: any) => any;
   onSuccess?: (data: any, variables: any, context: any) => any;
   onSettled?: (data: any, error: any, variables: any, context: any) => any;
 };
 
-// Hue Bridge
+// Lights
 
-const ip = HUE_BRIDGE_IP;
-const username = HUE_BRIDGE_USERNAME;
-
-// Light API
-
-const getLight = async (deviceId: string): Promise<Light> => {
-  const url = `http://${ip}/api/${username}/lights/${deviceId}`;
-  return await axios.get(url).then((res) => res.data);
+const useLightsQuery = (options?: UseQueryOptions) => {
+  const queryKey = "lights";
+  const queryFn = listLights;
+  return useQuery({ queryKey, queryFn, ...options });
 };
 
-const listLights = async (): Promise<Record<string, Light>> => {
-  const url = `http://${ip}/api/${username}/lights`;
-  return await axios.get(url).then((res) => res.data);
+const useLightQueryById = (deviceId: string, options?: UseQueryOptions) => {
+  const queryKey = ["lights", deviceId];
+  const queryFn = async (): Promise<Light> => await getLight(deviceId);
+  return useQuery({ queryKey, queryFn, ...options });
 };
-
-const putLight = async (
-  deviceId: string,
-  state: Partial<Light["state"]>
-): Promise<any> => {
-  const url = `http://${ip}/api/${username}/lights/${deviceId}/state`;
-  return await axios.put(url, state);
-};
-
-const toggleLight = async (deviceId: string): Promise<any> => {
-  const light = await getLight(deviceId);
-  return await putLight(deviceId, { on: !light.state.on });
-};
-
-// Group API
-
-const listGroups = async (): Promise<Record<string, Group>> => {
-  const url = `http://${ip}/api/${username}/groups`;
-  return await axios.get(url).then((res) => res.data);
-};
-
-// Schedule API
-
-const listSchedules = async (): Promise<Record<string, Schedule>> => {
-  const url = `http://${ip}/api/${username}/schedules`;
-  return await axios.get(url).then((res) => res.data);
-};
-
-// Hooks
 
 const useLightMutation = (deviceId: string, options?: MutationOptions) => {
   const mutationFn = async (state: Partial<Light["state"]>) => {
@@ -79,26 +56,20 @@ const useLightMutation = (deviceId: string, options?: MutationOptions) => {
   });
 };
 
-const useLightsQuery = (options?: UseQueryOptions) => {
-  return useQuery({ queryKey: "lights", queryFn: listLights, ...options });
-};
+// Groups
 
-const useLightQueryById = (deviceId: string, options?: UseQueryOptions) => {
-  const queryKey = ["lights", deviceId];
-  const queryFn = async (): Promise<Light> => await getLight(deviceId);
+const useGroupsQuery = (options?: UseQueryOptions) => {
+  const queryKey = "groups";
+  const queryFn = listGroups;
   return useQuery({ queryKey, queryFn, ...options });
 };
 
-const useGroupsQuery = (options?: UseQueryOptions) => {
-  return useQuery({ queryKey: "groups", queryFn: listGroups, ...options });
-};
+// Schedules
 
 const useSchedulesQuery = (options: UseQueryOptions = {}) => {
-  return useQuery({
-    queryKey: "schedules",
-    queryFn: listSchedules,
-    ...options,
-  });
+  const queryKey = "schedules";
+  const queryFn = listSchedules;
+  return useQuery({ queryKey, queryFn, ...options });
 };
 
 export {
