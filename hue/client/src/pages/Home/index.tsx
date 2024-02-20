@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import {
   Avatar,
   Box,
@@ -32,7 +32,18 @@ import { HuePicker } from "react-color";
 import { hsvToHsl } from "@/utils/color";
 import { HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME } from "@/config";
 import { Light } from "./types";
-import { useLights, useLightsQuery } from "./hooks";
+import {
+  useLights,
+  useLightsQuery,
+  useSchedulesQuery,
+  useGroupsQuery,
+  useLightsQueryById,
+} from "./hooks";
+
+const maxSaturation = 254;
+const maxBrightness = 254;
+const convertHue = (hue: number) => (hue / 65535) * 360;
+const normalizeHue = (hue: number) => Math.round((hue / 360) * 65535);
 
 const SliderTitle: FC<BoxProps> = ({ children, ...props }) => (
   <Box
@@ -55,24 +66,23 @@ const LightCard: FC<{
     HUE_BRIDGE_IP,
     HUE_BRIDGE_USERNAME
   );
-  const [light, setLight] = useState<Light>(defaultLight);
-  const [hue, setHue] = useState<number>(
-    (defaultLight.state.hue / 65535) * 360
-  );
-  const [saturation, setSaturation] = useState<number>(defaultLight.state.sat);
-  const [brightness, setBrightness] = useState<number>(defaultLight.state.bri);
+  const queryOptions = {
+    initialData: defaultLight,
+    // refetchInterval: 1000,
+  };
+  const { data, refetch } = useLightsQueryById(deviceId, queryOptions);
+  const light: Light = data as Light;
+  const [hue, setHue] = useState<number>(convertHue(light.state.hue));
+  const [saturation, setSaturation] = useState<number>(light.state.sat);
+  const [brightness, setBrightness] = useState<number>(light.state.bri);
   const [showSatTooltip, setShowSatTooltip] = useState<boolean>(false);
   const [showBriTooltip, setShowBriTooltip] = useState<boolean>(false);
 
-  const refresh = async () => {
-    return await getLight(deviceId).then(async (light) => {
-      setLight(light);
-    });
-  };
-
   useEffect(() => {
-    refresh();
-  }, []);
+    setHue(convertHue(light.state.hue));
+    setSaturation(light.state.sat);
+    setBrightness(light.state.bri);
+  }, [light]);
 
   return (
     <Card
@@ -101,7 +111,7 @@ const LightCard: FC<{
                 <MenuItem
                   onClick={() => {
                     putLight(deviceId, { alert: "select" });
-                    refresh();
+                    refetch();
                   }}
                 >
                   Flash {light.state.alert === "select" && "✓"}
@@ -109,7 +119,7 @@ const LightCard: FC<{
                 <MenuItem
                   onClick={() => {
                     putLight(deviceId, { alert: "lselect" });
-                    refresh();
+                    refetch();
                   }}
                 >
                   Flash for 30 seconds {light.state.alert === "lselect" && "✓"}
@@ -117,7 +127,7 @@ const LightCard: FC<{
                 <MenuItem
                   onClick={() => {
                     putLight(deviceId, { alert: "none" });
-                    refresh();
+                    refetch();
                   }}
                 >
                   No alert {light.state.alert === "none" && "✓"}
@@ -128,7 +138,7 @@ const LightCard: FC<{
                 <MenuItem
                   onClick={() => {
                     putLight(deviceId, { effect: "colorloop" });
-                    refresh();
+                    refetch();
                   }}
                 >
                   Color loop {light.state.effect === "colorloop" && "✓"}
@@ -136,7 +146,7 @@ const LightCard: FC<{
                 <MenuItem
                   onClick={() => {
                     putLight(deviceId, { effect: "none" });
-                    refresh();
+                    refetch();
                   }}
                 >
                   No effect {light.state.effect === "none" && "✓"}
@@ -149,7 +159,11 @@ const LightCard: FC<{
       <CardBody
         bg={
           light.state.on
-            ? hsvToHsl(hue, saturation / 254, brightness / 254)
+            ? hsvToHsl(
+                hue,
+                saturation / maxSaturation,
+                brightness / maxBrightness
+              )
             : "gray.500"
         }
       >
@@ -166,8 +180,8 @@ const LightCard: FC<{
               }}
               onChangeComplete={(color) => {
                 putLight(deviceId, {
-                  hue: Math.round((color.hsl.h / 360) * 65535),
-                }).then(() => refresh());
+                  hue: normalizeHue(color.hsl.h),
+                }).then(() => refetch());
               }}
             />
           </HStack>
@@ -176,7 +190,7 @@ const LightCard: FC<{
             <SliderTitle>S</SliderTitle>
             <Slider
               min={0}
-              max={254}
+              max={maxSaturation}
               defaultValue={light.state.sat}
               value={saturation}
               onChange={(value) => {
@@ -186,7 +200,7 @@ const LightCard: FC<{
                 setShowSatTooltip(true);
               }}
               onChangeEnd={() => {
-                refresh();
+                refetch();
                 setShowSatTooltip(false);
               }}
               onMouseEnter={() => setShowSatTooltip(true)}
@@ -197,8 +211,8 @@ const LightCard: FC<{
                   background: `linear-gradient(to right, ${hsvToHsl(
                     hue,
                     0,
-                    brightness / 254
-                  )} 0%, ${hsvToHsl(hue, 1, brightness / 254)})`,
+                    brightness / maxBrightness
+                  )} 0%, ${hsvToHsl(hue, 1, brightness / maxBrightness)})`,
                 }}
               >
                 <SliderFilledTrack bg="none" />
@@ -208,7 +222,7 @@ const LightCard: FC<{
                 bg="gray.700"
                 placement="top"
                 isOpen={showSatTooltip}
-                label={`${Math.round((saturation / 254) * 100)}%`}
+                label={`${Math.round((saturation / maxSaturation) * 100)}%`}
               >
                 <SliderThumb />
               </Tooltip>
@@ -219,7 +233,7 @@ const LightCard: FC<{
             <SliderTitle>V</SliderTitle>
             <Slider
               min={0}
-              max={254}
+              max={maxBrightness}
               defaultValue={light.state.bri}
               value={brightness}
               onChange={(value) => {
@@ -229,7 +243,7 @@ const LightCard: FC<{
                 setShowBriTooltip(true);
               }}
               onChangeEnd={() => {
-                refresh();
+                refetch();
                 setShowBriTooltip(false);
               }}
               onMouseEnter={() => setShowBriTooltip(true)}
@@ -239,9 +253,9 @@ const LightCard: FC<{
                 style={{
                   background: `linear-gradient(to right, ${hsvToHsl(
                     hue,
-                    saturation / 254,
+                    saturation / maxSaturation,
                     0
-                  )}, ${hsvToHsl(hue, saturation / 254, 1)})`,
+                  )}, ${hsvToHsl(hue, saturation / maxSaturation, 1)})`,
                 }}
               >
                 <SliderFilledTrack bg="none" />
@@ -251,7 +265,7 @@ const LightCard: FC<{
                 bg="gray.700"
                 placement="top"
                 isOpen={showBriTooltip}
-                label={`${Math.round((brightness / 254) * 100)}%`}
+                label={`${Math.round((brightness / maxBrightness) * 100)}%`}
               >
                 <SliderThumb />
               </Tooltip>
@@ -265,7 +279,7 @@ const LightCard: FC<{
           isChecked={light.state.on}
           onChange={async () => {
             await toggleLight(deviceId).then(async () => {
-              await refresh();
+              await refetch();
             });
           }}
         />
@@ -275,31 +289,22 @@ const LightCard: FC<{
 };
 
 const Home: FC = () => {
-  const {
-    groups,
-    lights,
-    // listGroups,
-    // listLights,
-    // putLight,
-    // toggleLight,
-    schedules,
-    // listSchedules,
-  } = useLights(HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME);
-
-  const { data: lightsData } = useLightsQuery();
-
-  useEffect(() => {
-    // listLights();
-    // listGroups();
-    // listSchedules();
-  }, []);
+  const { data: lights } = useLightsQuery({
+    // refetchInterval: 1000,
+  });
+  const { data: groups } = useGroupsQuery({
+    // refetchInterval: 1000,
+  });
+  const { data: schedules } = useSchedulesQuery({
+    // refetchInterval: 1000,
+  });
 
   return (
     <Container paddingY={5}>
       <Stack spacing={5}>
         <Heading as="h2"> Lights </Heading>
         <Stack spacing={5}>
-          {Object.entries(lightsData || {}).map(([key, value]) => {
+          {Object.entries(lights || {}).map(([key, value]) => {
             return <LightCard deviceId={key} defaultLight={value} key={key} />;
           })}
         </Stack>
