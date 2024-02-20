@@ -37,7 +37,8 @@ import {
   useLightsQuery,
   useSchedulesQuery,
   useGroupsQuery,
-  useLightsQueryById,
+  useLightQueryById,
+  useLightMutation,
 } from "./hooks";
 
 const maxSaturation = 254;
@@ -62,16 +63,33 @@ const LightCard: FC<{
   deviceId: string;
   defaultLight: Light;
 }> = ({ deviceId, defaultLight }) => {
-  const { putLight, getLight, toggleLight } = useLights(
-    HUE_BRIDGE_IP,
-    HUE_BRIDGE_USERNAME
-  );
+  const {
+    // putLight,
+    toggleLight,
+  } = useLights(HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME);
   const queryOptions = {
     initialData: defaultLight,
     // refetchInterval: 1000,
   };
-  const { data, refetch } = useLightsQueryById(deviceId, queryOptions);
+  const { data, refetch } = useLightQueryById(deviceId, queryOptions);
   const light: Light = data as Light;
+  const putLight = useLightMutation(deviceId, {
+    onSuccess: () => {
+      // refetch();
+    },
+    onMutate: (newState) => {
+      console.log("onMutate", newState);
+      // return queryClient.setQueryData(["light", deviceId], (oldData) => {
+      //   return {
+      //     ...oldData,
+      //     state: {
+      //       ...oldData.state,
+      //       ...newState,
+      //     },
+      //   };
+      // });
+    },
+  }).mutate;
   const [hue, setHue] = useState<number>(convertHue(light.state.hue));
   const [saturation, setSaturation] = useState<number>(light.state.sat);
   const [brightness, setBrightness] = useState<number>(light.state.bri);
@@ -110,7 +128,7 @@ const LightCard: FC<{
               <MenuGroup title="Alert">
                 <MenuItem
                   onClick={() => {
-                    putLight(deviceId, { alert: "select" });
+                    putLight({ alert: "select" });
                     refetch();
                   }}
                 >
@@ -118,7 +136,7 @@ const LightCard: FC<{
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
-                    putLight(deviceId, { alert: "lselect" });
+                    putLight({ alert: "lselect" });
                     refetch();
                   }}
                 >
@@ -126,7 +144,7 @@ const LightCard: FC<{
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
-                    putLight(deviceId, { alert: "none" });
+                    putLight({ alert: "none" });
                     refetch();
                   }}
                 >
@@ -137,7 +155,7 @@ const LightCard: FC<{
               <MenuGroup title="Effect">
                 <MenuItem
                   onClick={() => {
-                    putLight(deviceId, { effect: "colorloop" });
+                    putLight({ effect: "colorloop" });
                     refetch();
                   }}
                 >
@@ -145,7 +163,7 @@ const LightCard: FC<{
                 </MenuItem>
                 <MenuItem
                   onClick={() => {
-                    putLight(deviceId, { effect: "none" });
+                    putLight({ effect: "none" });
                     refetch();
                   }}
                 >
@@ -179,9 +197,10 @@ const LightCard: FC<{
                 setHue(color.hsl.h);
               }}
               onChangeComplete={(color) => {
-                putLight(deviceId, {
-                  hue: normalizeHue(color.hsl.h),
-                }).then(() => refetch());
+                putLight({ hue: normalizeHue(color.hsl.h) });
+                // putLight(deviceId, {
+                //   hue: normalizeHue(color.hsl.h),
+                // }).then(() => refetch());
               }}
             />
           </HStack>
@@ -196,7 +215,7 @@ const LightCard: FC<{
               onChange={(value) => {
                 if (!light.state.on) return;
                 setSaturation(value);
-                putLight(deviceId, { sat: value });
+                putLight({ sat: value });
                 setShowSatTooltip(true);
               }}
               onChangeEnd={() => {
@@ -239,7 +258,7 @@ const LightCard: FC<{
               onChange={(value) => {
                 if (!light.state.on) return;
                 setBrightness(value);
-                putLight(deviceId, { bri: value });
+                putLight({ bri: value });
                 setShowBriTooltip(true);
               }}
               onChangeEnd={() => {

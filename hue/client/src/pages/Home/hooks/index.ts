@@ -1,7 +1,13 @@
-import { useQuery, useMutation, UseQueryOptions } from "react-query";
+import {
+  UseMutationOptions,
+  UseQueryOptions,
+  UseQueryResult,
+  useMutation,
+  useQuery,
+} from "react-query";
 import axios from "axios";
-import { Light, Group, Schedule } from "../types";
 import { HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME } from "@/config";
+import { Light, Group, Schedule } from "../types";
 
 const ip = HUE_BRIDGE_IP;
 const username = HUE_BRIDGE_USERNAME;
@@ -12,14 +18,6 @@ const useLights = (ip: string, username: string) => {
     return await axios.get(url).then((res) => res.data);
   };
 
-  // TODO: 返り値の型を定義する
-  const toggleLight = async (deviceId: string): Promise<any> => {
-    // return await putLight(deviceId, { on: !lights[deviceId].state.on });
-    const light = await getLight(deviceId);
-    return await putLight(deviceId, { on: !light.state.on });
-  };
-
-  // TODO: 返り値の型を定義する
   const putLight = async (
     deviceId: string,
     state: Partial<Light["state"]>
@@ -28,14 +26,34 @@ const useLights = (ip: string, username: string) => {
     return await axios.put(url, state);
   };
 
-  return {
-    getLight,
-    putLight,
-    toggleLight,
+  const toggleLight = async (deviceId: string): Promise<any> => {
+    const light = await getLight(deviceId);
+    return await putLight(deviceId, { on: !light.state.on });
   };
+
+  return { putLight, toggleLight };
 };
 
-const useLightsQuery = (options: UseQueryOptions = {}) => {
+type MutationOptions = {
+  onMutate?: (args: any) => any;
+  onError?: (args: any) => any;
+  onSuccess?: () => any;
+  onSettled?: () => any;
+};
+
+// const useLightMutation = (deviceId: string, options?: UseMutationOptions) => {
+const useLightMutation = (deviceId: string, options?: MutationOptions) => {
+  const putLight = async (state: Partial<Light["state"]>) => {
+    const url = `http://${ip}/api/${username}/lights/${deviceId}/state`;
+    return await axios.put(url, state);
+  };
+  return useMutation({
+    mutationFn: putLight,
+    ...options,
+  });
+};
+
+const useLightsQuery = (options?: UseQueryOptions) => {
   const listLights = async (): Promise<Record<string, Light>> => {
     const url = `http://${ip}/api/${username}/lights`;
     return await axios.get(url).then((res) => res.data);
@@ -47,10 +65,7 @@ const useLightsQuery = (options: UseQueryOptions = {}) => {
   });
 };
 
-const useLightsQueryById = (
-  deviceId: string,
-  options: UseQueryOptions = {}
-) => {
+const useLightQueryById = (deviceId: string, options?: UseQueryOptions) => {
   const getLight = async (): Promise<Light> => {
     const url = `http://${ip}/api/${username}/lights/${deviceId}`;
     return await axios.get(url).then((res) => res.data);
@@ -62,7 +77,7 @@ const useLightsQueryById = (
   });
 };
 
-const useGroupsQuery = (options: UseQueryOptions = {}) => {
+const useGroupsQuery = (options?: UseQueryOptions) => {
   const listGroups = async (): Promise<Record<string, Group>> => {
     const url = `http://${ip}/api/${username}/groups`;
     return await axios.get(url).then((res) => res.data);
@@ -89,7 +104,8 @@ const useSchedulesQuery = (options: UseQueryOptions = {}) => {
 export {
   useLights,
   useLightsQuery,
-  useLightsQueryById,
+  useLightQueryById,
   useGroupsQuery,
   useSchedulesQuery,
+  useLightMutation,
 };
