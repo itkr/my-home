@@ -62,16 +62,22 @@ const LightCard: FC<{
   deviceId: string;
   defaultLight: Light;
 }> = ({ deviceId, defaultLight }) => {
-  const queryOptions = {
+  // Query
+  const { data, refetch } = useLightQueryById(deviceId, {
     initialData: defaultLight,
-    // refetchInterval: 1000,
-  };
-  const { data, refetch } = useLightQueryById(deviceId, queryOptions);
+    refetchInterval: 5000,
+  });
   const light: Light = data as Light;
+
+  // Mutation
   const putLight = useLightMutation(deviceId).mutate;
+
+  // Slider
   const [hue, setHue] = useState<number>(convertHue(light.state.hue));
   const [saturation, setSaturation] = useState<number>(light.state.sat);
   const [brightness, setBrightness] = useState<number>(light.state.bri);
+
+  // Slider Tooltip
   const [showSatTooltip, setShowSatTooltip] = useState<boolean>(false);
   const [showBriTooltip, setShowBriTooltip] = useState<boolean>(false);
 
@@ -108,7 +114,7 @@ const LightCard: FC<{
                 <MenuItem
                   onClick={() => {
                     putLight({ alert: "select" });
-                    refetch();
+                    // refetch();
                   }}
                 >
                   Flash {light.state.alert === "select" && "✓"}
@@ -116,7 +122,7 @@ const LightCard: FC<{
                 <MenuItem
                   onClick={() => {
                     putLight({ alert: "lselect" });
-                    refetch();
+                    // refetch();
                   }}
                 >
                   Flash for 30 seconds {light.state.alert === "lselect" && "✓"}
@@ -124,7 +130,7 @@ const LightCard: FC<{
                 <MenuItem
                   onClick={() => {
                     putLight({ alert: "none" });
-                    refetch();
+                    // refetch();
                   }}
                 >
                   No alert {light.state.alert === "none" && "✓"}
@@ -135,7 +141,7 @@ const LightCard: FC<{
                 <MenuItem
                   onClick={() => {
                     putLight({ effect: "colorloop" });
-                    refetch();
+                    // refetch();
                   }}
                 >
                   Color loop {light.state.effect === "colorloop" && "✓"}
@@ -143,7 +149,7 @@ const LightCard: FC<{
                 <MenuItem
                   onClick={() => {
                     putLight({ effect: "none" });
-                    refetch();
+                    // refetch();
                   }}
                 >
                   No effect {light.state.effect === "none" && "✓"}
@@ -194,11 +200,12 @@ const LightCard: FC<{
               onChange={(value) => {
                 if (!light.state.on) return;
                 setSaturation(value);
-                putLight({ sat: value });
+                // putLight({ sat: value });
                 setShowSatTooltip(true);
               }}
-              onChangeEnd={() => {
+              onChangeEnd={(value) => {
                 // refetch();
+                putLight({ sat: value });
                 setShowSatTooltip(false);
               }}
               onMouseEnter={() => setShowSatTooltip(true)}
@@ -237,11 +244,12 @@ const LightCard: FC<{
               onChange={(value) => {
                 if (!light.state.on) return;
                 setBrightness(value);
-                putLight({ bri: value });
+                // putLight({ bri: value });
                 setShowBriTooltip(true);
               }}
-              onChangeEnd={() => {
+              onChangeEnd={(value) => {
                 // refetch();
+                putLight({ bri: value });
                 setShowBriTooltip(false);
               }}
               onMouseEnter={() => setShowBriTooltip(true)}
@@ -291,10 +299,10 @@ const Home: FC = () => {
     // refetchInterval: 1000,
   });
   const { data: groups } = useGroupsQuery({
-    // refetchInterval: 1000,
+    refetchInterval: 5000,
   });
   const { data: schedules } = useSchedulesQuery({
-    // refetchInterval: 1000,
+    refetchInterval: 5000,
   });
 
   return (
