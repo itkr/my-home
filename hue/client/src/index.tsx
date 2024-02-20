@@ -2,7 +2,8 @@ import reportWebVitals from "@/reportWebVitals";
 import React, { FC } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "react-query";
+import { QueryClientProvider } from "react-query";
+import { queryClient } from "@/config";
 
 // font
 // import "@fontsource/noto-sans-jp/400.css";
@@ -15,8 +16,6 @@ import { ChakraProvider } from "@chakra-ui/react";
 // pages
 import Home from "@/pages/Home";
 import NotFound from "@/pages/misc/404";
-
-const queryClient = new QueryClient();
 
 const Router: FC = () => {
   return (

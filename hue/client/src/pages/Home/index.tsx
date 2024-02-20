@@ -30,10 +30,9 @@ import {
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { HuePicker } from "react-color";
 import { hsvToHsl } from "@/utils/color";
-import { HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME } from "@/config";
 import { Light } from "./types";
 import {
-  useLights,
+  toggleLight,
   useLightsQuery,
   useSchedulesQuery,
   useGroupsQuery,
@@ -63,33 +62,13 @@ const LightCard: FC<{
   deviceId: string;
   defaultLight: Light;
 }> = ({ deviceId, defaultLight }) => {
-  const {
-    // putLight,
-    toggleLight,
-  } = useLights(HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME);
   const queryOptions = {
     initialData: defaultLight,
     // refetchInterval: 1000,
   };
   const { data, refetch } = useLightQueryById(deviceId, queryOptions);
   const light: Light = data as Light;
-  const putLight = useLightMutation(deviceId, {
-    onSuccess: () => {
-      // refetch();
-    },
-    onMutate: (newState) => {
-      console.log("onMutate", newState);
-      // return queryClient.setQueryData(["light", deviceId], (oldData) => {
-      //   return {
-      //     ...oldData,
-      //     state: {
-      //       ...oldData.state,
-      //       ...newState,
-      //     },
-      //   };
-      // });
-    },
-  }).mutate;
+  const putLight = useLightMutation(deviceId).mutate;
   const [hue, setHue] = useState<number>(convertHue(light.state.hue));
   const [saturation, setSaturation] = useState<number>(light.state.sat);
   const [brightness, setBrightness] = useState<number>(light.state.bri);
@@ -219,7 +198,7 @@ const LightCard: FC<{
                 setShowSatTooltip(true);
               }}
               onChangeEnd={() => {
-                refetch();
+                // refetch();
                 setShowSatTooltip(false);
               }}
               onMouseEnter={() => setShowSatTooltip(true)}
@@ -262,7 +241,7 @@ const LightCard: FC<{
                 setShowBriTooltip(true);
               }}
               onChangeEnd={() => {
-                refetch();
+                // refetch();
                 setShowBriTooltip(false);
               }}
               onMouseEnter={() => setShowBriTooltip(true)}
