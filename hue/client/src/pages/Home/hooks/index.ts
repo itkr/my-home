@@ -12,7 +12,6 @@ import {
   listLights,
   putLight,
   // toggleLightState,
-  toggleLight,
   // putLightState,
   listSchedules,
   listGroups,
@@ -45,24 +44,19 @@ const useLightMutation = (deviceId: string, options?: MutationOptions) => {
   const mutationFn = async (state: Partial<Light["state"]>) => {
     return await putLight(deviceId, state);
   };
-
   // Optimistic update 定型文
   const onMutate = async (variables: any) => {
     // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
     await queryClient.cancelQueries(queryKey);
-
     // Snapshot the previous value
     const previousValue = queryClient.getQueryData(queryKey);
-
     // Optimistically update to the new value
     queryClient.setQueryData(queryKey, (old: any) => {
       return { ...old, state: { ...old.state, ...variables } };
     });
-
     // Return a context object with the previous value
     return { previousValue };
   };
-
   return useMutation({ mutationFn, onMutate, ...options });
 };
 
@@ -98,7 +92,6 @@ const useSchedulesQuery = (options: UseQueryOptions = {}) => {
 
 export {
   // lights
-  toggleLight,
   useLightsQuery,
   useLightQueryById,
   useLightMutation,

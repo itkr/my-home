@@ -1,6 +1,6 @@
 import axios from "axios";
 import { HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME } from "@/config";
-import { Light, Group, Schedule } from "../types";
+import { Light, Group, Schedule, PutResponse } from "../types";
 
 // Hue Bridge
 
@@ -22,14 +22,9 @@ const getLight = async (deviceId: string): Promise<Light> => {
 const putLight = async (
   deviceId: string,
   state: Partial<Light["state"]>
-): Promise<any> => {
+): Promise<PutResponse> => {
   const url = `http://${ip}/api/${username}/lights/${deviceId}/state`;
   return await axios.put(url, state);
-};
-
-const toggleLight = async (deviceId: string): Promise<any> => {
-  const light = await getLight(deviceId);
-  return await putLight(deviceId, { on: !light.state.on });
 };
 
 // Group API
@@ -47,14 +42,9 @@ const getGroup = async (groupId: string): Promise<Group> => {
 const putGroup = async (
   groupId: string,
   state: Partial<Group["action"]>
-): Promise<any> => {
+): Promise<PutResponse> => {
   const url = `http://${ip}/api/${username}/groups/${groupId}/action`;
   return await axios.put(url, state);
-};
-
-const toggleGroup = async (groupId: string): Promise<any> => {
-  const group = await getGroup(groupId);
-  return await putGroup(groupId, { on: !group.action.on });
 };
 
 // Schedule API
@@ -69,12 +59,10 @@ export {
   listLights,
   getLight,
   putLight,
-  toggleLight,
   // group
   listGroups,
   getGroup,
   putGroup,
-  toggleGroup,
   // schedule
   listSchedules,
 };

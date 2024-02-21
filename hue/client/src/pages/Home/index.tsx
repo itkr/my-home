@@ -33,14 +33,15 @@ import { hsvToHsl } from "@/utils/color";
 import { Light } from "./types";
 import {
   // light
-  toggleLight,
   useLightsQuery,
   useLightQueryById,
   useLightMutation,
+
   // group
   useGroupsQuery,
   useGroupQueryById,
   useGroupMutation,
+
   // schedule
   useSchedulesQuery,
 } from "./hooks";
@@ -63,13 +64,13 @@ const SliderTitle: FC<BoxProps> = ({ children, ...props }) => (
   </Box>
 );
 
-const LightCard: FC<{
-  deviceId: string;
-  defaultLight: Light;
-}> = ({ deviceId, defaultLight }) => {
+const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
+  deviceId,
+  initialData,
+}) => {
   // Query
-  const { data, refetch } = useLightQueryById(deviceId, {
-    initialData: defaultLight,
+  const { data } = useLightQueryById(deviceId, {
+    initialData,
     refetchInterval: 5000,
   });
   const light: Light = data as Light;
@@ -86,6 +87,7 @@ const LightCard: FC<{
   const [showSatTooltip, setShowSatTooltip] = useState<boolean>(false);
   const [showBriTooltip, setShowBriTooltip] = useState<boolean>(false);
 
+  // Update state when light changes
   useEffect(() => {
     setHue(convertHue(light.state.hue));
     setSaturation(light.state.sat);
@@ -288,10 +290,8 @@ const LightCard: FC<{
         <Progress size="xs" isIndeterminate />
         <Switch
           isChecked={light.state.on}
-          onChange={async () => {
-            await toggleLight(deviceId).then(async () => {
-              await refetch();
-            });
+          onChange={() => {
+            putLight({ on: !light.state.on });
           }}
         />
       </CardFooter>
@@ -316,7 +316,7 @@ const Home: FC = () => {
         <Heading as="h2"> Lights </Heading>
         <Stack spacing={5}>
           {Object.entries(lights || {}).map(([key, value]) => {
-            return <LightCard deviceId={key} defaultLight={value} key={key} />;
+            return <LightCard deviceId={key} initialData={value} key={key} />;
           })}
         </Stack>
         <Heading as="h2"> Groups </Heading>
