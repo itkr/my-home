@@ -39,6 +39,24 @@ const listGroups = async (): Promise<Record<string, Group>> => {
   return await axios.get(url).then((res) => res.data);
 };
 
+const getGroup = async (groupId: string): Promise<Group> => {
+  const url = `http://${ip}/api/${username}/groups/${groupId}`;
+  return await axios.get(url).then((res) => res.data);
+};
+
+const putGroup = async (
+  groupId: string,
+  state: Partial<Group["action"]>
+): Promise<any> => {
+  const url = `http://${ip}/api/${username}/groups/${groupId}/action`;
+  return await axios.put(url, state);
+};
+
+const toggleGroup = async (groupId: string): Promise<any> => {
+  const group = await getGroup(groupId);
+  return await putGroup(groupId, { on: !group.action.on });
+};
+
 // Schedule API
 
 const listSchedules = async (): Promise<Record<string, Schedule>> => {
@@ -47,10 +65,16 @@ const listSchedules = async (): Promise<Record<string, Schedule>> => {
 };
 
 export {
-  getLight,
+  // light
   listLights,
+  getLight,
   putLight,
   toggleLight,
+  // group
   listGroups,
+  getGroup,
+  putGroup,
+  toggleGroup,
+  // schedule
   listSchedules,
 };

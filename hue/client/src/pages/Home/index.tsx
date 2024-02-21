@@ -32,12 +32,17 @@ import { HuePicker } from "react-color";
 import { hsvToHsl } from "@/utils/color";
 import { Light } from "./types";
 import {
+  // light
   toggleLight,
   useLightsQuery,
-  useSchedulesQuery,
-  useGroupsQuery,
   useLightQueryById,
   useLightMutation,
+  // group
+  useGroupsQuery,
+  useGroupQueryById,
+  useGroupMutation,
+  // schedule
+  useSchedulesQuery,
 } from "./hooks";
 
 const maxSaturation = 254;
@@ -70,7 +75,7 @@ const LightCard: FC<{
   const light: Light = data as Light;
 
   // Mutation
-  const putLight = useLightMutation(deviceId).mutate;
+  const { mutate: putLight } = useLightMutation(deviceId);
 
   // Slider
   const [hue, setHue] = useState<number>(convertHue(light.state.hue));
@@ -200,16 +205,16 @@ const LightCard: FC<{
               onChange={(value) => {
                 if (!light.state.on) return;
                 setSaturation(value);
-                // putLight({ sat: value });
+                putLight({ sat: value });
                 setShowSatTooltip(true);
               }}
               onChangeEnd={(value) => {
                 // refetch();
-                putLight({ sat: value });
                 setShowSatTooltip(false);
               }}
               onMouseEnter={() => setShowSatTooltip(true)}
               onMouseLeave={() => setShowSatTooltip(false)}
+              isDisabled={!light.state.on}
             >
               <SliderTrack
                 style={{
@@ -244,16 +249,16 @@ const LightCard: FC<{
               onChange={(value) => {
                 if (!light.state.on) return;
                 setBrightness(value);
-                // putLight({ bri: value });
+                putLight({ bri: value });
                 setShowBriTooltip(true);
               }}
               onChangeEnd={(value) => {
                 // refetch();
-                putLight({ bri: value });
                 setShowBriTooltip(false);
               }}
               onMouseEnter={() => setShowBriTooltip(true)}
               onMouseLeave={() => setShowBriTooltip(false)}
+              isDisabled={!light.state.on}
             >
               <SliderTrack
                 style={{
@@ -319,7 +324,11 @@ const Home: FC = () => {
           {Object.entries(groups || {}).map(([key, value]) => {
             return (
               <Box key={key}>
-                {value.name}({value.state.all_on ? "on" : "off"})
+                <Flex alignItems="center" gap={3}>
+                  <Avatar size="md" name={value.name} bg="gray.500" />
+                  {value.name}
+                  <Switch isChecked={value.state.all_on} isDisabled />
+                </Flex>
               </Box>
             );
           })}
