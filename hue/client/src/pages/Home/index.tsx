@@ -25,6 +25,7 @@ import {
   SliderTrack,
   Stack,
   Switch,
+  Text,
   Tooltip,
 } from "@chakra-ui/react";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -84,6 +85,7 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
   const [brightness, setBrightness] = useState<number>(light.state.bri);
 
   // Slider Tooltip
+  const [showHueTooltip, setShowHueTooltip] = useState<boolean>(false);
   const [showSatTooltip, setShowSatTooltip] = useState<boolean>(false);
   const [showBriTooltip, setShowBriTooltip] = useState<boolean>(false);
 
@@ -179,6 +181,7 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
       >
         <Stack>
           {/* Hue */}
+          {/*
           <HStack>
             <SliderTitle>H</SliderTitle>
             <HuePicker
@@ -195,6 +198,60 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
                 // }).then(() => refetch());
               }}
             />
+          </HStack>
+          */}
+          <HStack>
+            <SliderTitle>H</SliderTitle>
+            <Slider
+              min={0}
+              max={359}
+              defaultValue={light.state.sat}
+              value={hue}
+              onChange={(value) => {
+                if (!light.state.on) return;
+                setHue(value);
+                putLight({ hue: normalizeHue(value) });
+                setShowHueTooltip(true);
+              }}
+              onChangeEnd={(value) => {
+                // refetch();
+                setShowHueTooltip(false);
+              }}
+              onMouseEnter={() => setShowHueTooltip(true)}
+              onMouseLeave={() => setShowHueTooltip(false)}
+              isDisabled={!light.state.on}
+            >
+              <SliderTrack
+                height="1em"
+                style={{
+                  background: `linear-gradient(to right,
+                     ${hsvToHsl(0, 1, 1)} 0%,
+                     ${hsvToHsl(30, 1, 1)} ${(30 / 360) * 100}%,
+                     ${hsvToHsl(60, 1, 1)} ${(60 / 360) * 100}%,
+                     ${hsvToHsl(90, 1, 1)} ${(90 / 360) * 100}%,
+                     ${hsvToHsl(120, 1, 1)} ${(120 / 360) * 100}%,
+                     ${hsvToHsl(150, 1, 1)} ${(150 / 360) * 100}%,
+                     ${hsvToHsl(180, 1, 1)} ${(180 / 360) * 100}%,
+                     ${hsvToHsl(210, 1, 1)} ${(210 / 360) * 100}%,
+                     ${hsvToHsl(240, 1, 1)} ${(240 / 360) * 100}%,
+                     ${hsvToHsl(270, 1, 1)} ${(270 / 360) * 100}%,
+                     ${hsvToHsl(300, 1, 1)} ${(300 / 360) * 100}%,
+                     ${hsvToHsl(330, 1, 1)} ${(330 / 360) * 100}%,
+                     ${hsvToHsl(360, 1, 1)} 100%)`,
+                }}
+              >
+                <SliderFilledTrack bg="none" />
+              </SliderTrack>
+              <Tooltip
+                hasArrow
+                bg="gray.700"
+                placement="top"
+                isOpen={showHueTooltip}
+                label={`${Math.round(hue)}°`}
+              >
+                <SliderThumb />
+              </Tooltip>
+            </Slider>
           </HStack>
           {/* Saturation */}
           <HStack>
@@ -219,6 +276,7 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
               isDisabled={!light.state.on}
             >
               <SliderTrack
+                height="1em"
                 style={{
                   background: `linear-gradient(to right, ${hsvToHsl(
                     hue,
@@ -263,6 +321,7 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
               isDisabled={!light.state.on}
             >
               <SliderTrack
+                height="1em"
                 style={{
                   background: `linear-gradient(to right, ${hsvToHsl(
                     hue,
@@ -287,13 +346,25 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
         </Stack>
       </CardBody>
       <CardFooter>
-        <Progress size="xs" isIndeterminate />
-        <Switch
-          isChecked={light.state.on}
-          onChange={() => {
-            putLight({ on: !light.state.on });
-          }}
-        />
+        {/* <Progress size="xs" isIndeterminate /> */}
+        <HStack justifyContent="space-between" alignItems="center" flex="1">
+          <Switch
+            isChecked={light.state.on}
+            onChange={() => {
+              putLight({ on: !light.state.on });
+            }}
+          />
+          <Text
+            fontSize="sm"
+            color={light.state.on ? "black" : "white"}
+            flex="1"
+            textAlign="right"
+          >
+            HSV({Math.round(hue)}°,{" "}
+            {Math.round((saturation / maxSaturation) * 100)}%,{" "}
+            {Math.round((brightness / maxBrightness) * 100)}%)
+          </Text>
+        </HStack>
       </CardFooter>
     </Card>
   );
