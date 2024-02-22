@@ -15,6 +15,8 @@ import { ChakraProvider } from "@chakra-ui/react";
 
 // pages
 import Home from "@/pages/Home";
+import Lights from "@/pages/Lights";
+import Groups from "@/pages/Groups";
 import NotFound from "@/pages/misc/404";
 
 const Router: FC = () => {
@@ -26,6 +28,8 @@ const Router: FC = () => {
             {/* <ScrollToTop /> */}
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/lights" element={<Lights />} />
+              <Route path="/groups" element={<Groups />} />
               <Route path="*" element={<NotFound />} />
               <Route path="/404" element={<NotFound />} />
             </Routes>

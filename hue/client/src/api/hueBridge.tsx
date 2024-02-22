@@ -1,6 +1,6 @@
 import axios from "axios";
 import { HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME } from "@/config";
-import { Light, Group, Schedule, PutResponse } from "../types";
+import { Light, Group, Schedule, PutResponse } from "@/types";
 
 // Hue Bridge
 

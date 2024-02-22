@@ -13,4 +13,7 @@ const hsvToHsl = (h: number, s: number, v: number) => {
   return `hsl(${h}, ${s * 100}%, ${l * 100}%)`;
 };
 
-export { hsvToHsl };
+const convertHue = (hue: number) => (hue / 65535) * 360;
+const normalizeHue = (hue: number) => Math.round((hue / 360) * 65535);
+
+export { hsvToHsl, convertHue, normalizeHue };

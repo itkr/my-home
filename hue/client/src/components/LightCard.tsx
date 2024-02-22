@@ -47,8 +47,8 @@ import {
 import { SunIcon, MoonIcon } from "@chakra-ui/icons";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { hsvToHsl } from "@/utils/color";
-import { Light } from "../types";
-import { useLightQueryById, useLightMutation } from "../hooks";
+import { Light } from "@/types";
+import { useLightQueryById, useLightMutation } from "@/hooks";
 
 const maxSaturation = 254;
 const maxBrightness = 254;

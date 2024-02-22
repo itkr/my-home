@@ -6,7 +6,7 @@ import {
   useQuery,
 } from "react-query";
 import { queryClient } from "@/config";
-import { Light } from "../types";
+import { Light } from "@/types";
 import {
   getLight,
   listLights,
@@ -15,7 +15,7 @@ import {
   // putLightState,
   listSchedules,
   listGroups,
-} from "../api/hueBridge";
+} from "@/api/hueBridge";
 
 type MutationOptions = {
   // UseMutationOptions

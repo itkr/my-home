@@ -19,35 +19,17 @@ import {
   Wrap,
 } from "@chakra-ui/react";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { useLightsQuery, useGroupsQuery, useSchedulesQuery } from "@/hooks";
-import { LightCard } from "@/components/LightCard";
+import { useGroupsQuery } from "@/hooks";
 import { GroupLightCard } from "@/components/GroupLightCard";
 
-const Home: FC = () => {
-  const { data: lights } = useLightsQuery({});
+const Groups: FC = () => {
   const { data: groups, refetch: refetchGroups } = useGroupsQuery({
-    refetchInterval: 5000,
-  });
-  const { data: schedules } = useSchedulesQuery({
-    refetchInterval: 5000,
+    // refetchInterval: 5000,
   });
 
   return (
     <Container paddingY={5}>
       <Stack spacing={5}>
-        <Heading as="h2">Lights</Heading>
-        <Stack spacing={5}>
-          {Object.entries(lights || {}).map(([key, value]) => {
-            return (
-              <LightCard
-                key={key}
-                deviceId={key}
-                initialData={value}
-                onSuccess={() => refetchGroups()}
-              />
-            );
-          })}
-        </Stack>
         <Heading as="h2">Groups</Heading>
         <Stack spacing={5}>
           {Object.entries(groups || {}).map(([key, value]) => {
@@ -97,19 +79,9 @@ const Home: FC = () => {
             );
           })}
         </Stack>
-        <Heading as="h2">Schedules</Heading>
-        <Stack spacing={5}>
-          {Object.entries(schedules || {}).map(([key, value]) => {
-            return (
-              <Box key={key}>
-                {value.name}({value.status})
-              </Box>
-            );
-          })}
-        </Stack>
       </Stack>
     </Container>
   );
 };
 
-export default Home;
+export default Groups;
