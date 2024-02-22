@@ -381,6 +381,7 @@ const LightCard: FC<{
             isAttached
             variant="outline"
             alignSelf="center"
+            isDisabled={!light.state.on}
           >
             {effects.map((effect) => (
               <Button
