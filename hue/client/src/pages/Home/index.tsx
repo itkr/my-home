@@ -1,13 +1,24 @@
 import { FC, useState, useEffect } from "react";
 import {
   Avatar,
+  Badge,
   Box,
   BoxProps,
+  Button,
+  ButtonGroup,
   Card,
   CardBody,
   CardFooter,
   CardHeader,
   Container,
+  Divider,
+  Drawer,
+  DrawerBody,
+  DrawerCloseButton,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
   Flex,
   HStack,
   Heading,
@@ -29,6 +40,7 @@ import {
   Tooltip,
   Wrap,
 } from "@chakra-ui/react";
+import { SunIcon, MoonIcon } from "@chakra-ui/icons";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { HuePicker } from "react-color";
 import { hsvToHsl } from "@/utils/color";
@@ -52,6 +64,16 @@ const maxSaturation = 254;
 const maxBrightness = 254;
 const convertHue = (hue: number) => (hue / 65535) * 360;
 const normalizeHue = (hue: number) => Math.round((hue / 360) * 65535);
+const alerts = [
+  { key: "select", label: "Flash" },
+  { key: "lselect", label: "Flash for 30s" },
+  { key: "none", label: "No alert" },
+];
+
+const effects = [
+  { key: "colorloop", label: "Color loop" },
+  { key: "none", label: "No effect" },
+];
 
 const SliderTitle: FC<BoxProps> = ({ children, ...props }) => (
   <Box
@@ -66,10 +88,11 @@ const SliderTitle: FC<BoxProps> = ({ children, ...props }) => (
   </Box>
 );
 
-const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
-  deviceId,
-  initialData,
-}) => {
+const LightCard: FC<{
+  deviceId: string;
+  initialData: Light;
+  onChange?: () => void;
+}> = ({ deviceId, initialData, onChange }) => {
   // Query
   const { data } = useLightQueryById(deviceId, {
     initialData,
@@ -78,7 +101,11 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
   const light: Light = data as Light;
 
   // Mutation
-  const { mutate: putLight } = useLightMutation(deviceId);
+  const { mutate: putLight } = useLightMutation(deviceId, {
+    onSuccess: () => {
+      onChange?.();
+    },
+  });
 
   // Slider
   const [hue, setHue] = useState<number>(convertHue(light.state.hue));
@@ -106,7 +133,16 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
     >
       <CardHeader>
         <Flex justifyContent="space-between" alignItems="center" gap={3}>
-          <Avatar size="sm" name={light.name} bg="gray.500" />
+          <Avatar
+            size="sm"
+            name={light.name}
+            bg={hsvToHsl(
+              hue,
+              saturation / maxSaturation,
+              brightness / maxBrightness
+            )}
+            boxShadow="sm"
+          />
           <Heading as="h3" size="md" flex="1">
             {light.name}
           </Heading>
@@ -124,7 +160,6 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
                 <MenuItem
                   onClick={() => {
                     putLight({ alert: "select" });
-                    // refetch();
                   }}
                 >
                   Flash {light.state.alert === "select" && "✓"}
@@ -132,7 +167,6 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
                 <MenuItem
                   onClick={() => {
                     putLight({ alert: "lselect" });
-                    // refetch();
                   }}
                 >
                   Flash for 30 seconds {light.state.alert === "lselect" && "✓"}
@@ -140,7 +174,6 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
                 <MenuItem
                   onClick={() => {
                     putLight({ alert: "none" });
-                    // refetch();
                   }}
                 >
                   No alert {light.state.alert === "none" && "✓"}
@@ -151,7 +184,6 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
                 <MenuItem
                   onClick={() => {
                     putLight({ effect: "colorloop" });
-                    // refetch();
                   }}
                 >
                   Color loop {light.state.effect === "colorloop" && "✓"}
@@ -159,7 +191,6 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
                 <MenuItem
                   onClick={() => {
                     putLight({ effect: "none" });
-                    // refetch();
                   }}
                 >
                   No effect {light.state.effect === "none" && "✓"}
@@ -169,38 +200,21 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
           </Menu>
         </Flex>
       </CardHeader>
-      <CardBody
-        bg={
-          light.state.on
-            ? hsvToHsl(
-                hue,
-                saturation / maxSaturation,
-                brightness / maxBrightness
-              )
-            : "gray.500"
-        }
-      >
-        <Stack>
+      <Divider borderColor="gray.200" />
+      <CardBody padding={0}>
+        <Stack
+          padding={5}
+          bg={
+            light.state.on
+              ? hsvToHsl(
+                  hue,
+                  saturation / maxSaturation,
+                  brightness / maxBrightness
+                )
+              : "gray.500"
+          }
+        >
           {/* Hue */}
-          {/*
-          <HStack>
-            <SliderTitle>H</SliderTitle>
-            <HuePicker
-              width="100%"
-              color={{ h: hue, s: 0, l: 0 }}
-              onChange={(color) => {
-                if (!light.state.on) return;
-                setHue(color.hsl.h);
-              }}
-              onChangeComplete={(color) => {
-                putLight({ hue: normalizeHue(color.hsl.h) });
-                // putLight(deviceId, {
-                //   hue: normalizeHue(color.hsl.h),
-                // }).then(() => refetch());
-              }}
-            />
-          </HStack>
-          */}
           <HStack>
             <SliderTitle>H</SliderTitle>
             <Slider
@@ -215,7 +229,6 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
                 setShowHueTooltip(true);
               }}
               onChangeEnd={(value) => {
-                // refetch();
                 setShowHueTooltip(false);
               }}
               onMouseEnter={() => setShowHueTooltip(true)}
@@ -226,7 +239,7 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
                 height="1em"
                 style={{
                   background: `linear-gradient(to right,
-                     ${hsvToHsl(0, 1, 1)} 0%,
+                     ${hsvToHsl(0, 1, 1)} ${(0 / 360) * 100}%,
                      ${hsvToHsl(30, 1, 1)} ${(30 / 360) * 100}%,
                      ${hsvToHsl(60, 1, 1)} ${(60 / 360) * 100}%,
                      ${hsvToHsl(90, 1, 1)} ${(90 / 360) * 100}%,
@@ -238,7 +251,7 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
                      ${hsvToHsl(270, 1, 1)} ${(270 / 360) * 100}%,
                      ${hsvToHsl(300, 1, 1)} ${(300 / 360) * 100}%,
                      ${hsvToHsl(330, 1, 1)} ${(330 / 360) * 100}%,
-                     ${hsvToHsl(360, 1, 1)} 100%)`,
+                     ${hsvToHsl(360, 1, 1)} ${(360 / 360) * 100}%)`,
                 }}
               >
                 <SliderFilledTrack bg="none" />
@@ -269,7 +282,6 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
                 setShowSatTooltip(true);
               }}
               onChangeEnd={(value) => {
-                // refetch();
                 setShowSatTooltip(false);
               }}
               onMouseEnter={() => setShowSatTooltip(true)}
@@ -314,7 +326,6 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
                 setShowBriTooltip(true);
               }}
               onChangeEnd={(value) => {
-                // refetch();
                 setShowBriTooltip(false);
               }}
               onMouseEnter={() => setShowBriTooltip(true)}
@@ -345,7 +356,49 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
             </Slider>
           </HStack>
         </Stack>
+        <Divider borderColor="gray.200" />
+        <Stack spacing={3} p={5}>
+          <ButtonGroup
+            size="sm"
+            isAttached
+            variant="outline"
+            alignSelf="center"
+          >
+            {alerts.map((alert) => (
+              <Button
+                key={alert.key}
+                variant={light.state.alert === alert.key ? "solid" : "outline"}
+                onClick={() => {
+                  putLight({ alert: alert.key });
+                }}
+              >
+                {alert.label}
+              </Button>
+            ))}
+          </ButtonGroup>
+          <ButtonGroup
+            size="sm"
+            isAttached
+            variant="outline"
+            alignSelf="center"
+          >
+            {effects.map((effect) => (
+              <Button
+                key={effect.key}
+                variant={
+                  light.state.effect === effect.key ? "solid" : "outline"
+                }
+                onClick={() => {
+                  putLight({ effect: effect.key });
+                }}
+              >
+                {effect.label}
+              </Button>
+            ))}
+          </ButtonGroup>
+        </Stack>
       </CardBody>
+      <Divider borderColor="gray.200" />
       <CardFooter>
         {/* <Progress size="xs" isIndeterminate /> */}
         <HStack justifyContent="space-between" alignItems="center" flex="1">
@@ -365,6 +418,11 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
             {Math.round((saturation / maxSaturation) * 100)}%,{" "}
             {Math.round((brightness / maxBrightness) * 100)}%)
           </Text>
+          {light.state.on ? (
+            <SunIcon color="gray.500" />
+          ) : (
+            <MoonIcon color="gray.500" />
+          )}
         </HStack>
       </CardFooter>
     </Card>
@@ -393,11 +451,96 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
 //   return progress;
 // }
 
+const GroupLightCard: FC<{ deviceId: string; onChange?: () => void }> = ({
+  deviceId,
+  onChange,
+}) => {
+  const { data } = useLightQueryById(deviceId);
+  const light: Light = data as Light;
+  const { mutate: putLight } = useLightMutation(deviceId);
+  const [showDrawer, setShowDrawer] = useState(false);
+  return (
+    <>
+      <Drawer
+        isOpen={showDrawer}
+        placement="right"
+        onClose={() => {
+          setShowDrawer(false);
+        }}
+        size="sm"
+      >
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerCloseButton />
+          <DrawerHeader>Light Settings</DrawerHeader>
+          <DrawerBody>
+            <LightCard
+              deviceId={deviceId}
+              initialData={light}
+              onChange={onChange}
+            />
+          </DrawerBody>
+          <DrawerFooter></DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+      <Stack
+        key={deviceId}
+        direction="row"
+        bg={light.state.on ? "white" : "gray.700"}
+        borderRadius="md"
+        overflow="hidden"
+        borderWidth="1px"
+        padding={2}
+        width="100%"
+        display="flex"
+        alignItems="center"
+        cursor="pointer"
+        boxShadow="sm"
+        onClick={() => {
+          setShowDrawer(true);
+        }}
+      >
+        <Avatar
+          size="sm"
+          color="black"
+          name={light.name}
+          bg={hsvToHsl(
+            convertHue(light.state.hue),
+            light.state.sat / maxSaturation,
+            light.state.bri / maxBrightness
+          )}
+          opacity={light.state.on ? 1 : 0.5}
+        />
+        <Text
+          fontSize="sm"
+          color={light.state.on ? "black" : "white"}
+          textAlign="center"
+        >
+          {light.name}
+        </Text>
+        {light.state.on ? (
+          <SunIcon color="gray.500" />
+        ) : (
+          <MoonIcon color="gray.500" />
+        )}
+        {light.state.alert !== "none" && (
+          <Badge colorScheme="red">
+            {alerts.find((a) => a.key === light.state.alert)?.label}
+          </Badge>
+        )}
+        {light.state.effect !== "none" && (
+          <Badge colorScheme="blue">
+            {effects.find((e) => e.key === light.state.effect)?.label}
+          </Badge>
+        )}
+      </Stack>
+    </>
+  );
+};
+
 const Home: FC = () => {
-  const { data: lights } = useLightsQuery({
-    // refetchInterval: 1000,
-  });
-  const { data: groups } = useGroupsQuery({
+  const { data: lights } = useLightsQuery({});
+  const { data: groups, refetch: refetchGroups } = useGroupsQuery({
     refetchInterval: 5000,
   });
   const { data: schedules } = useSchedulesQuery({
@@ -410,7 +553,16 @@ const Home: FC = () => {
         <Heading as="h2"> Lights </Heading>
         <Stack spacing={5}>
           {Object.entries(lights || {}).map(([key, value]) => {
-            return <LightCard deviceId={key} initialData={value} key={key} />;
+            return (
+              <LightCard
+                deviceId={key}
+                initialData={value}
+                key={key}
+                onChange={() => {
+                  refetchGroups();
+                }}
+              />
+            );
           })}
         </Stack>
         <Heading as="h2"> Groups </Heading>
@@ -441,29 +593,17 @@ const Home: FC = () => {
                       </Menu>
                     </Flex>
                   </CardHeader>
-                  <CardBody>
+                  <CardBody bg="gray.100">
                     <Wrap spacing={3}>
-                      {value.lights.map((lightId: string) => {
-                        // const light = lights[lightId];
+                      {value.lights.map((deviceId: string) => {
                         return (
-                          <Box
-                            key={lightId}
-                            borderRadius="md"
-                            overflow="hidden"
-                            borderWidth="1px"
-                            padding={2}
-                            width="100px"
-                            height="100px"
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            cursor="pointer"
-                            onClick={() => {
-                              console.log(lightId);
+                          <GroupLightCard
+                            key={deviceId}
+                            deviceId={deviceId}
+                            onChange={() => {
+                              refetchGroups();
                             }}
-                          >
-                            <Avatar size="md" name={lightId} />
-                          </Box>
+                          />
                         );
                       })}
                     </Wrap>
