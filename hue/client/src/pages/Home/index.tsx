@@ -27,6 +27,7 @@ import {
   Switch,
   Text,
   Tooltip,
+  Wrap,
 } from "@chakra-ui/react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { HuePicker } from "react-color";
@@ -370,6 +371,28 @@ const LightCard: FC<{ deviceId: string; initialData: Light }> = ({
   );
 };
 
+// const CountDownProgress: FC<{seconds: number}> = ({seconds}) => {
+//   const [progress, setProgress] = useState(100);
+//   useEffect(() => {
+//     const interval = setInterval(() => {
+//       setProgress((prev) => prev - 100 / seconds);
+//     }, 1000);
+//     return () => clearInterval(interval);
+//   }, [seconds]);
+//   return <Progress size="xs" value={progress} />;
+// }
+
+// const useCountDown = (seconds: number) => {
+//   const [progress, setProgress] = useState(100);
+//   useEffect(() => {
+//     const interval = setInterval(() => {
+//       setProgress((prev) => prev - 100 / seconds);
+//     }, 1000);
+//     return () => clearInterval(interval);
+//   }, [seconds]);
+//   return progress;
+// }
+
 const Home: FC = () => {
   const { data: lights } = useLightsQuery({
     // refetchInterval: 1000,
@@ -395,11 +418,62 @@ const Home: FC = () => {
           {Object.entries(groups || {}).map(([key, value]) => {
             return (
               <Box key={key}>
-                <Flex alignItems="center" gap={3}>
-                  <Avatar size="md" name={value.name} bg="gray.500" />
-                  {value.name}
-                  <Switch isChecked={value.state.all_on} isDisabled />
-                </Flex>
+                <Card>
+                  <CardHeader>
+                    <Flex justifyContent="space-between" alignItems="center">
+                      <Flex alignItems="center" gap={3}>
+                        <Avatar size="sm" name={value.name} />
+                        <Heading as="h3" size="md">
+                          {value.name}
+                        </Heading>
+                      </Flex>
+                      <Menu>
+                        <MenuButton
+                          as={IconButton}
+                          variant="ghost"
+                          icon={<BsThreeDotsVertical />}
+                          colorScheme="gray"
+                        />
+                        <MenuList>
+                          <MenuItem>Turn on</MenuItem>
+                          <MenuItem>Turn off</MenuItem>
+                        </MenuList>
+                      </Menu>
+                    </Flex>
+                  </CardHeader>
+                  <CardBody>
+                    <Wrap spacing={3}>
+                      {value.lights.map((lightId: string) => {
+                        // const light = lights[lightId];
+                        return (
+                          <Box
+                            key={lightId}
+                            borderRadius="md"
+                            overflow="hidden"
+                            borderWidth="1px"
+                            padding={2}
+                            width="100px"
+                            height="100px"
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            cursor="pointer"
+                            onClick={() => {
+                              console.log(lightId);
+                            }}
+                          >
+                            <Avatar size="md" name={lightId} />
+                          </Box>
+                        );
+                      })}
+                    </Wrap>
+                  </CardBody>
+                  <CardFooter>
+                    <Switch isChecked={value.state.all_on} isDisabled />
+                  </CardFooter>
+                  {/* <Progress size="xs" isIndeterminate /> */}
+                  {/* <CountDownProgress seconds={30} /> */}
+                </Card>
               </Box>
             );
           })}
