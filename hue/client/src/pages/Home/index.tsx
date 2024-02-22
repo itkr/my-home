@@ -1,5 +1,13 @@
 import { FC, useState, useEffect } from "react";
 import {
+  Table,
+  TableCaption,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  useDisclosure,
   Avatar,
   Badge,
   Box,
@@ -29,6 +37,13 @@ import {
   MenuGroup,
   MenuItem,
   MenuList,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Progress,
   Slider,
   SliderFilledTrack,
@@ -117,6 +132,9 @@ const LightCard: FC<{
   const [showSatTooltip, setShowSatTooltip] = useState<boolean>(false);
   const [showBriTooltip, setShowBriTooltip] = useState<boolean>(false);
 
+  // Modal
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   // Update state when light changes
   useEffect(() => {
     setHue(convertHue(light.state.hue));
@@ -125,120 +143,143 @@ const LightCard: FC<{
   }, [light]);
 
   return (
-    <Card
-      bg={light.state.on ? "white" : "gray.700"}
-      color={light.state.on ? "black" : "white"}
-      // style={{ transition: "all 0.2s ease-in-out" }}
-      opacity={light.state.reachable ? 1 : 0.5}
-    >
-      <CardHeader>
-        <Flex justifyContent="space-between" alignItems="center" gap={3}>
-          <Avatar
-            size="sm"
-            name={light.name}
-            bg={hsvToHsl(
-              hue,
-              saturation / maxSaturation,
-              brightness / maxBrightness
-            )}
-            boxShadow="sm"
-          />
-          <Heading as="h3" size="md" flex="1">
-            {light.name}
-          </Heading>
-          <Menu>
-            <MenuButton
-              as={IconButton}
-              variant="ghost"
-              icon={<BsThreeDotsVertical />}
-              colorScheme="gray"
-              color={light.state.on ? "black" : "white"}
+    <>
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{light.name}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Table size="sm">
+              <Thead>
+                <Tr>
+                  {" "}
+                  <Th>Key</Th> <Th>Value</Th>{" "}
+                </Tr>
+              </Thead>
+              <Tbody>
+                <Tr>
+                  {" "}
+                  <Td>Type</Td> <Td>{light.type}</Td>{" "}
+                </Tr>
+                <Tr>
+                  {" "}
+                  <Td>Model</Td> <Td>{light.modelid}</Td>{" "}
+                </Tr>
+                <Tr>
+                  {" "}
+                  <Td>Product Name</Td> <Td>{light.productname}</Td>{" "}
+                </Tr>
+                <Tr>
+                  {" "}
+                  <Td>Product ID</Td> <Td>{light.productid}</Td>{" "}
+                </Tr>
+                <Tr>
+                  {" "}
+                  <Td>Manufacturer</Td> <Td>{light.manufacturername}</Td>{" "}
+                </Tr>
+                <Tr>
+                  {" "}
+                  <Td>Software Version</Td> <Td>{light.swversion}</Td>{" "}
+                </Tr>
+                <Tr>
+                  {" "}
+                  <Td>Software Config ID</Td> <Td>{light.swconfigid}</Td>{" "}
+                </Tr>
+                <Tr>
+                  {" "}
+                  <Td>Unique ID</Td> <Td>{light.uniqueid}</Td>{" "}
+                </Tr>
+              </Tbody>
+            </Table>
+          </ModalBody>
+          <ModalFooter></ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Card
+        bg={light.state.on ? "white" : "gray.700"}
+        color={light.state.on ? "black" : "white"}
+        // style={{ transition: "all 0.2s ease-in-out" }}
+        opacity={light.state.reachable ? 1 : 0.5}
+      >
+        <CardHeader>
+          <Flex justifyContent="space-between" alignItems="center" gap={3}>
+            <Avatar
+              size="sm"
+              name={light.name}
+              bg={hsvToHsl(
+                hue,
+                saturation / maxSaturation,
+                brightness / maxBrightness
+              )}
+              boxShadow="sm"
             />
-            <MenuList color="black">
-              {/* alert */}
-              <MenuGroup title="Alert">
-                <MenuItem
-                  onClick={() => {
-                    putLight({ alert: "select" });
-                  }}
-                >
-                  Flash {light.state.alert === "select" && "✓"}
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    putLight({ alert: "lselect" });
-                  }}
-                >
-                  Flash for 30 seconds {light.state.alert === "lselect" && "✓"}
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    putLight({ alert: "none" });
-                  }}
-                >
-                  No alert {light.state.alert === "none" && "✓"}
-                </MenuItem>
-              </MenuGroup>
-              <MenuDivider />
-              <MenuGroup title="Effect">
-                <MenuItem
-                  onClick={() => {
-                    putLight({ effect: "colorloop" });
-                  }}
-                >
-                  Color loop {light.state.effect === "colorloop" && "✓"}
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    putLight({ effect: "none" });
-                  }}
-                >
-                  No effect {light.state.effect === "none" && "✓"}
-                </MenuItem>
-              </MenuGroup>
-            </MenuList>
-          </Menu>
-        </Flex>
-      </CardHeader>
-      <Divider borderColor="gray.200" />
-      <CardBody padding={0}>
-        <Stack
-          padding={5}
-          bg={
-            light.state.on
-              ? hsvToHsl(
-                  hue,
-                  saturation / maxSaturation,
-                  brightness / maxBrightness
-                )
-              : "gray.500"
-          }
-        >
-          {/* Hue */}
-          <HStack>
-            <SliderTitle>H</SliderTitle>
-            <Slider
-              min={0}
-              max={359}
-              defaultValue={light.state.sat}
-              value={hue}
-              onChange={(value) => {
-                if (!light.state.on) return;
-                setHue(value);
-                putLight({ hue: normalizeHue(value) });
-                setShowHueTooltip(true);
-              }}
-              onChangeEnd={(value) => {
-                setShowHueTooltip(false);
-              }}
-              onMouseEnter={() => setShowHueTooltip(true)}
-              onMouseLeave={() => setShowHueTooltip(false)}
-              isDisabled={!light.state.on}
-            >
-              <SliderTrack
-                height="1em"
-                style={{
-                  background: `linear-gradient(to right,
+            <Heading as="h3" size="md" flex="1">
+              {light.name}
+            </Heading>
+            <Menu>
+              <MenuButton
+                as={IconButton}
+                variant="ghost"
+                icon={<BsThreeDotsVertical />}
+                colorScheme="gray"
+                color={light.state.on ? "black" : "white"}
+              />
+              <MenuList color="black">
+                {/* alert */}
+                <MenuGroup title="Infomation">
+                  <MenuDivider />
+                  <MenuItem
+                    onClick={() => {
+                      onOpen();
+                    }}
+                  >
+                    Details
+                  </MenuItem>
+                </MenuGroup>
+              </MenuList>
+            </Menu>
+          </Flex>
+        </CardHeader>
+        <Divider borderColor="gray.200" />
+        <CardBody padding={0}>
+          <Stack
+            padding={5}
+            bg={
+              light.state.on
+                ? hsvToHsl(
+                    hue,
+                    saturation / maxSaturation,
+                    brightness / maxBrightness
+                  )
+                : "gray.500"
+            }
+          >
+            {/* Hue */}
+            <HStack>
+              <SliderTitle>H</SliderTitle>
+              <Slider
+                min={0}
+                max={359}
+                defaultValue={light.state.sat}
+                value={hue}
+                onChange={(value) => {
+                  if (!light.state.on) return;
+                  setHue(value);
+                  putLight({ hue: normalizeHue(value) });
+                  setShowHueTooltip(true);
+                }}
+                onChangeEnd={(value) => {
+                  setShowHueTooltip(false);
+                }}
+                onMouseEnter={() => setShowHueTooltip(true)}
+                onMouseLeave={() => setShowHueTooltip(false)}
+                isDisabled={!light.state.on}
+              >
+                <SliderTrack
+                  height="1em"
+                  style={{
+                    background: `linear-gradient(to right,
                      ${hsvToHsl(0, 1, 1)} ${(0 / 360) * 100}%,
                      ${hsvToHsl(30, 1, 1)} ${(30 / 360) * 100}%,
                      ${hsvToHsl(60, 1, 1)} ${(60 / 360) * 100}%,
@@ -252,181 +293,179 @@ const LightCard: FC<{
                      ${hsvToHsl(300, 1, 1)} ${(300 / 360) * 100}%,
                      ${hsvToHsl(330, 1, 1)} ${(330 / 360) * 100}%,
                      ${hsvToHsl(360, 1, 1)} ${(360 / 360) * 100}%)`,
+                  }}
+                >
+                  <SliderFilledTrack bg="none" />
+                </SliderTrack>
+                <Tooltip
+                  hasArrow
+                  bg="gray.700"
+                  placement="top"
+                  isOpen={showHueTooltip}
+                  label={`${Math.round(hue)}°`}
+                >
+                  <SliderThumb />
+                </Tooltip>
+              </Slider>
+            </HStack>
+            {/* Saturation */}
+            <HStack>
+              <SliderTitle>S</SliderTitle>
+              <Slider
+                min={0}
+                max={maxSaturation}
+                defaultValue={light.state.sat}
+                value={saturation}
+                onChange={(value) => {
+                  if (!light.state.on) return;
+                  setSaturation(value);
+                  putLight({ sat: value });
+                  setShowSatTooltip(true);
                 }}
+                onChangeEnd={(value) => {
+                  setShowSatTooltip(false);
+                }}
+                onMouseEnter={() => setShowSatTooltip(true)}
+                onMouseLeave={() => setShowSatTooltip(false)}
+                isDisabled={!light.state.on}
               >
-                <SliderFilledTrack bg="none" />
-              </SliderTrack>
-              <Tooltip
-                hasArrow
-                bg="gray.700"
-                placement="top"
-                isOpen={showHueTooltip}
-                label={`${Math.round(hue)}°`}
+                <SliderTrack
+                  height="1em"
+                  style={{
+                    background: `linear-gradient(to right, ${hsvToHsl(
+                      hue,
+                      0,
+                      brightness / maxBrightness
+                    )} 0%, ${hsvToHsl(hue, 1, brightness / maxBrightness)})`,
+                  }}
+                >
+                  <SliderFilledTrack bg="none" />
+                </SliderTrack>
+                <Tooltip
+                  hasArrow
+                  bg="gray.700"
+                  placement="top"
+                  isOpen={showSatTooltip}
+                  label={`${Math.round((saturation / maxSaturation) * 100)}%`}
+                >
+                  <SliderThumb />
+                </Tooltip>
+              </Slider>
+            </HStack>
+            {/* Brightness */}
+            <HStack>
+              <SliderTitle>V</SliderTitle>
+              <Slider
+                min={0}
+                max={maxBrightness}
+                defaultValue={light.state.bri}
+                value={brightness}
+                onChange={(value) => {
+                  if (!light.state.on) return;
+                  setBrightness(value);
+                  putLight({ bri: value });
+                  setShowBriTooltip(true);
+                }}
+                onChangeEnd={(value) => {
+                  setShowBriTooltip(false);
+                }}
+                onMouseEnter={() => setShowBriTooltip(true)}
+                onMouseLeave={() => setShowBriTooltip(false)}
+                isDisabled={!light.state.on}
               >
-                <SliderThumb />
-              </Tooltip>
-            </Slider>
-          </HStack>
-          {/* Saturation */}
-          <HStack>
-            <SliderTitle>S</SliderTitle>
-            <Slider
-              min={0}
-              max={maxSaturation}
-              defaultValue={light.state.sat}
-              value={saturation}
-              onChange={(value) => {
-                if (!light.state.on) return;
-                setSaturation(value);
-                putLight({ sat: value });
-                setShowSatTooltip(true);
-              }}
-              onChangeEnd={(value) => {
-                setShowSatTooltip(false);
-              }}
-              onMouseEnter={() => setShowSatTooltip(true)}
-              onMouseLeave={() => setShowSatTooltip(false)}
+                <SliderTrack
+                  height="1em"
+                  style={{
+                    background: `linear-gradient(to right, ${hsvToHsl(
+                      hue,
+                      saturation / maxSaturation,
+                      0
+                    )}, ${hsvToHsl(hue, saturation / maxSaturation, 1)})`,
+                  }}
+                >
+                  <SliderFilledTrack bg="none" />
+                </SliderTrack>
+                <Tooltip
+                  hasArrow
+                  bg="gray.700"
+                  placement="top"
+                  isOpen={showBriTooltip}
+                  label={`${Math.round((brightness / maxBrightness) * 100)}%`}
+                >
+                  <SliderThumb />
+                </Tooltip>
+              </Slider>
+            </HStack>
+          </Stack>
+          <Divider borderColor="gray.200" />
+          <Stack spacing={3} p={5}>
+            <ButtonGroup
+              size="sm"
+              isAttached
+              variant="outline"
+              alignSelf="center"
+            >
+              {alerts.map((alert) => (
+                <Button
+                  key={alert.key}
+                  variant={
+                    light.state.alert === alert.key ? "solid" : "outline"
+                  }
+                  onClick={() => {
+                    putLight({ alert: alert.key });
+                  }}
+                >
+                  {alert.label}
+                </Button>
+              ))}
+            </ButtonGroup>
+            <ButtonGroup
+              size="sm"
+              isAttached
+              variant="outline"
+              alignSelf="center"
               isDisabled={!light.state.on}
             >
-              <SliderTrack
-                height="1em"
-                style={{
-                  background: `linear-gradient(to right, ${hsvToHsl(
-                    hue,
-                    0,
-                    brightness / maxBrightness
-                  )} 0%, ${hsvToHsl(hue, 1, brightness / maxBrightness)})`,
-                }}
-              >
-                <SliderFilledTrack bg="none" />
-              </SliderTrack>
-              <Tooltip
-                hasArrow
-                bg="gray.700"
-                placement="top"
-                isOpen={showSatTooltip}
-                label={`${Math.round((saturation / maxSaturation) * 100)}%`}
-              >
-                <SliderThumb />
-              </Tooltip>
-            </Slider>
-          </HStack>
-          {/* Brightness */}
-          <HStack>
-            <SliderTitle>V</SliderTitle>
-            <Slider
-              min={0}
-              max={maxBrightness}
-              defaultValue={light.state.bri}
-              value={brightness}
-              onChange={(value) => {
-                if (!light.state.on) return;
-                setBrightness(value);
-                putLight({ bri: value });
-                setShowBriTooltip(true);
-              }}
-              onChangeEnd={(value) => {
-                setShowBriTooltip(false);
-              }}
-              onMouseEnter={() => setShowBriTooltip(true)}
-              onMouseLeave={() => setShowBriTooltip(false)}
-              isDisabled={!light.state.on}
-            >
-              <SliderTrack
-                height="1em"
-                style={{
-                  background: `linear-gradient(to right, ${hsvToHsl(
-                    hue,
-                    saturation / maxSaturation,
-                    0
-                  )}, ${hsvToHsl(hue, saturation / maxSaturation, 1)})`,
-                }}
-              >
-                <SliderFilledTrack bg="none" />
-              </SliderTrack>
-              <Tooltip
-                hasArrow
-                bg="gray.700"
-                placement="top"
-                isOpen={showBriTooltip}
-                label={`${Math.round((brightness / maxBrightness) * 100)}%`}
-              >
-                <SliderThumb />
-              </Tooltip>
-            </Slider>
-          </HStack>
-        </Stack>
+              {effects.map((effect) => (
+                <Button
+                  key={effect.key}
+                  variant={
+                    light.state.effect === effect.key ? "solid" : "outline"
+                  }
+                  onClick={() => {
+                    putLight({ effect: effect.key });
+                  }}
+                >
+                  {effect.label}
+                </Button>
+              ))}
+            </ButtonGroup>
+          </Stack>
+        </CardBody>
         <Divider borderColor="gray.200" />
-        <Stack spacing={3} p={5}>
-          <ButtonGroup
-            size="sm"
-            isAttached
-            variant="outline"
-            alignSelf="center"
-          >
-            {alerts.map((alert) => (
-              <Button
-                key={alert.key}
-                variant={light.state.alert === alert.key ? "solid" : "outline"}
-                onClick={() => {
-                  putLight({ alert: alert.key });
-                }}
-              >
-                {alert.label}
-              </Button>
-            ))}
-          </ButtonGroup>
-          <ButtonGroup
-            size="sm"
-            isAttached
-            variant="outline"
-            alignSelf="center"
-            isDisabled={!light.state.on}
-          >
-            {effects.map((effect) => (
-              <Button
-                key={effect.key}
-                variant={
-                  light.state.effect === effect.key ? "solid" : "outline"
-                }
-                onClick={() => {
-                  putLight({ effect: effect.key });
-                }}
-              >
-                {effect.label}
-              </Button>
-            ))}
-          </ButtonGroup>
-        </Stack>
-      </CardBody>
-      <Divider borderColor="gray.200" />
-      <CardFooter>
-        {/* <Progress size="xs" isIndeterminate /> */}
-        <HStack justifyContent="space-between" alignItems="center" flex="1">
-          <Switch
-            isChecked={light.state.on}
-            onChange={() => {
-              putLight({ on: !light.state.on });
-            }}
-          />
-          <Text
-            fontSize="sm"
-            color={light.state.on ? "black" : "white"}
-            flex="1"
-            textAlign="right"
-          >
-            HSV({Math.round(hue)}°,{" "}
-            {Math.round((saturation / maxSaturation) * 100)}%,{" "}
-            {Math.round((brightness / maxBrightness) * 100)}%)
-          </Text>
-          {light.state.on ? (
-            <SunIcon color="gray.500" />
-          ) : (
-            <MoonIcon color="gray.500" />
-          )}
-        </HStack>
-      </CardFooter>
-    </Card>
+        <CardFooter>
+          {/* <Progress size="xs" isIndeterminate /> */}
+          <HStack justifyContent="space-between" alignItems="center" flex="1">
+            <Switch
+              isChecked={light.state.on}
+              onChange={() => {
+                putLight({ on: !light.state.on });
+              }}
+            />
+            <Text fontSize="sm" color="gray.500" flex="1" textAlign="right">
+              HSV({Math.round(hue)}°,{" "}
+              {Math.round((saturation / maxSaturation) * 100)}%,{" "}
+              {Math.round((brightness / maxBrightness) * 100)}%)
+            </Text>
+            {light.state.on ? (
+              <SunIcon color="gray.500" />
+            ) : (
+              <MoonIcon color="gray.500" />
+            )}
+          </HStack>
+        </CardFooter>
+      </Card>
+    </>
   );
 };
 
@@ -610,7 +649,7 @@ const Home: FC = () => {
                     </Wrap>
                   </CardBody>
                   <CardFooter>
-                    <Switch isChecked={value.state.all_on} isDisabled />
+                    <Switch isChecked={value.state.any_on} isDisabled />
                   </CardFooter>
                   {/* <Progress size="xs" isIndeterminate /> */}
                   {/* <CountDownProgress seconds={30} /> */}
