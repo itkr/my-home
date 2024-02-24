@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { Container, Stack } from "@chakra-ui/react";
+import { Stack } from "@chakra-ui/react";
 import { useLightsQuery } from "@/hooks";
 import { LightCard } from "@/components/LightCard";
 import { BaseLayout } from "@/components/BaseLayout";
@@ -10,11 +10,9 @@ const Lights: FC = () => {
   return (
     <BaseLayout title="Lights">
       <Stack spacing={5}>
-        <Stack spacing={5}>
-          {Object.entries(lights || {}).map(([key, value]) => {
-            return <LightCard key={key} deviceId={key} initialData={value} />;
-          })}
-        </Stack>
+        {Object.entries(lights || {}).map(([key, value]) => {
+          return <LightCard key={key} deviceId={key} initialData={value} />;
+        })}
       </Stack>
     </BaseLayout>
   );

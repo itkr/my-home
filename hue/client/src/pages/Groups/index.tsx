@@ -29,60 +29,54 @@ const Groups: FC = () => {
   });
 
   return (
-    <>
-      <BaseLayout title="Groups">
-        <Stack spacing={5}>
-          <Stack spacing={5}>
-            {Object.entries(groups || {}).map(([key, value]) => {
-              return (
-                <Box key={key}>
-                  <Card>
-                    <CardHeader>
-                      <Flex justifyContent="space-between" alignItems="center">
-                        <Flex alignItems="center" gap={3}>
-                          <Avatar size="sm" name={value.name} />
-                          <Heading as="h3" size="md">
-                            {value.name}
-                          </Heading>
-                        </Flex>
-                        <Menu>
-                          <MenuButton
-                            as={IconButton}
-                            variant="ghost"
-                            icon={<BsThreeDotsVertical />}
-                            colorScheme="gray"
-                          />
-                          <MenuList>
-                            <MenuItem>Turn on</MenuItem>
-                            <MenuItem>Turn off</MenuItem>
-                          </MenuList>
-                        </Menu>
-                      </Flex>
-                    </CardHeader>
-                    <CardBody bg="gray.100">
-                      <Wrap spacing={3}>
-                        {value.lights.map((deviceId: string) => {
-                          return (
-                            <GroupLightCard
-                              key={deviceId}
-                              deviceId={deviceId}
-                              onSuccess={() => refetchGroups()}
-                            />
-                          );
-                        })}
-                      </Wrap>
-                    </CardBody>
-                    <CardFooter>
-                      <Switch isChecked={value.state.any_on} isDisabled />
-                    </CardFooter>
-                  </Card>
-                </Box>
-              );
-            })}
-          </Stack>
-        </Stack>
-      </BaseLayout>
-    </>
+    <BaseLayout title="Groups">
+      <Stack spacing={5}>
+        {Object.entries(groups || {}).map(([key, value]) => {
+          return (
+            <Card key={key}>
+              <CardHeader>
+                <Flex justifyContent="space-between" alignItems="center">
+                  <Flex alignItems="center" gap={3}>
+                    <Avatar size="sm" name={value.name} />
+                    <Heading as="h3" size="md">
+                      {value.name}
+                    </Heading>
+                  </Flex>
+                  <Menu>
+                    <MenuButton
+                      as={IconButton}
+                      variant="ghost"
+                      icon={<BsThreeDotsVertical />}
+                      colorScheme="gray"
+                    />
+                    <MenuList>
+                      <MenuItem>Turn on</MenuItem>
+                      <MenuItem>Turn off</MenuItem>
+                    </MenuList>
+                  </Menu>
+                </Flex>
+              </CardHeader>
+              <CardBody bg="gray.100">
+                <Wrap spacing={3}>
+                  {value.lights.map((deviceId: string) => {
+                    return (
+                      <GroupLightCard
+                        key={deviceId}
+                        deviceId={deviceId}
+                        onSuccess={() => refetchGroups()}
+                      />
+                    );
+                  })}
+                </Wrap>
+              </CardBody>
+              <CardFooter>
+                <Switch isChecked={value.state.any_on} isDisabled />
+              </CardFooter>
+            </Card>
+          );
+        })}
+      </Stack>
+    </BaseLayout>
   );
 };
 

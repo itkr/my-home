@@ -1,5 +1,6 @@
 import { FC, useState, useEffect } from "react";
 import {
+  Wrap,
   Avatar,
   Box,
   BoxProps,
@@ -356,31 +357,25 @@ const LightCard: FC<{
             <Text fontSize="sm" color="gray.500" pl={5}>
               Presets
             </Text>
-            <Stack
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
-              padding={5}
-            >
+            <Wrap justify="center" padding={5}>
               {presets.map((preset) => (
-                <IconButton
+                <Button
                   key={preset.key}
                   aria-label={preset.label}
-                  icon={<SunIcon />}
                   borderRadius="full"
                   border="1px solid #eeeeee;"
+                  size="sm"
                   bg={hsvToHsl(
                     convertHue(preset.hsv.hue),
                     preset.hsv.sat / maxSaturation,
                     preset.hsv.bri / maxBrightness
                   )}
+                  isDisabled={!light.state.on}
                   onClick={() => mutate({ ...preset.hsv })}
-                  _hover={{
-                    opacity: 0.8,
-                  }}
+                  _hover={{ opacity: 0.8 }}
                 />
               ))}
-            </Stack>
+            </Wrap>
           </Box>
           <Divider borderColor="gray.200" />
           <Stack spacing={3} p={5}>
