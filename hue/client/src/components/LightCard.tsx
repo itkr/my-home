@@ -126,6 +126,23 @@ const DetailModal: FC<{
   );
 };
 
+type Preset = {
+  key: string;
+  label: string;
+  hsv: { hue: number; sat: number; bri: number };
+};
+
+const presets: Preset[] = [
+  { key: "red", label: "Red", hsv: { hue: 0, sat: 254, bri: 254 } },
+  { key: "green", label: "Green", hsv: { hue: 21845, sat: 254, bri: 254 } },
+  { key: "blue", label: "Blue", hsv: { hue: 43690, sat: 254, bri: 254 } },
+  { key: "white", label: "White", hsv: { hue: 0, sat: 0, bri: 254 } },
+  { key: "yellow", label: "Yellow", hsv: { hue: 10922, sat: 254, bri: 254 } },
+  { key: "orange", label: "Orange", hsv: { hue: 5461, sat: 254, bri: 254 } },
+  { key: "pink", label: "Pink", hsv: { hue: 54613, sat: 254, bri: 254 } },
+  { key: "cyan", label: "Cyan", hsv: { hue: 32768, sat: 254, bri: 254 } },
+];
+
 const LightCard: FC<{
   deviceId: string;
   initialData: Light;
@@ -335,6 +352,36 @@ const LightCard: FC<{
               </Slider>
             </HStack>
           </Stack>
+          <Box>
+            <Text fontSize="sm" color="gray.500" pl={5}>
+              Presets
+            </Text>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              padding={5}
+            >
+              {presets.map((preset) => (
+                <IconButton
+                  key={preset.key}
+                  aria-label={preset.label}
+                  icon={<SunIcon />}
+                  borderRadius="full"
+                  border="1px solid #eeeeee;"
+                  bg={hsvToHsl(
+                    convertHue(preset.hsv.hue),
+                    preset.hsv.sat / maxSaturation,
+                    preset.hsv.bri / maxBrightness
+                  )}
+                  onClick={() => mutate({ ...preset.hsv })}
+                  _hover={{
+                    opacity: 0.8,
+                  }}
+                />
+              ))}
+            </Stack>
+          </Box>
           <Divider borderColor="gray.200" />
           <Stack spacing={3} p={5}>
             <ButtonGroup
