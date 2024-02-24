@@ -6,7 +6,6 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
-  Container,
   Flex,
   Heading,
   IconButton,
@@ -17,14 +16,11 @@ import {
   Stack,
   Switch,
   Wrap,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useLightsQuery, useGroupsQuery, useSchedulesQuery } from "@/hooks";
 import { LightCard } from "@/components/LightCard";
 import { GroupLightCard } from "@/components/GroupLightCard";
-import { Header } from "@/components/Header";
-import { SideMenu } from "@/components/SideMenu";
 import { BaseLayout } from "@/components/BaseLayout";
 
 const Home: FC = () => {
