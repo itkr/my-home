@@ -49,32 +49,8 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { hsvToHsl } from "@/utils/color";
 import { Light } from "@/types";
 import { useLightQueryById, useLightMutation } from "@/hooks";
-
-const maxSaturation = 254;
-const maxBrightness = 254;
-
-const alerts = [
-  { key: "select", label: "Flash" },
-  { key: "lselect", label: "Flash for 30s" },
-  { key: "none", label: "No alert" },
-];
-
-const effects = [
-  { key: "colorloop", label: "Color loop" },
-  { key: "none", label: "No effect" },
-];
-
-const convertHue = (hue: number) => (hue / 65535) * 360;
-const normalizeHue = (hue: number) => Math.round((hue / 360) * 65535);
-
-const makeHueGradient = (split: number = 12) => {
-  var gradient = `linear-gradient(to right,`;
-  for (let i = 0; i < split; i++) {
-    gradient += `${hsvToHsl((i * 360) / split, 1, 1)} ${(i / split) * 100}%,`;
-  }
-  gradient += `${hsvToHsl(360, 1, 1)} 100%)`;
-  return gradient;
-};
+import { alerts, effects, maxBrightness, maxSaturation } from "@/constants";
+import { convertHue, normalizeHue, makeHueGradient } from "@/utils/color";
 
 const SliderTitle: FC<BoxProps> = ({ children, ...props }) => (
   <Box
@@ -98,7 +74,7 @@ const DetailModal: FC<{
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Modal Title</ModalHeader>
+        <ModalHeader>{light.name}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <Table size="sm">

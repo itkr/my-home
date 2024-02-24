@@ -16,4 +16,13 @@ const hsvToHsl = (h: number, s: number, v: number) => {
 const convertHue = (hue: number) => (hue / 65535) * 360;
 const normalizeHue = (hue: number) => Math.round((hue / 360) * 65535);
 
-export { hsvToHsl, convertHue, normalizeHue };
+const makeHueGradient = (split: number = 12) => {
+  var gradient = `linear-gradient(to right,`;
+  for (let i = 0; i < split; i++) {
+    gradient += `${hsvToHsl((i * 360) / split, 1, 1)} ${(i / split) * 100}%,`;
+  }
+  gradient += `${hsvToHsl(360, 1, 1)} 100%)`;
+  return gradient;
+};
+
+export { hsvToHsl, convertHue, normalizeHue, makeHueGradient };
