@@ -21,7 +21,7 @@ import {
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useGroupsQuery } from "@/hooks";
 import { GroupLightCard } from "@/components/GroupLightCard";
-import { Header } from "@/components/Header";
+import { BaseLayout } from "@/components/BaseLayout";
 
 const Groups: FC = () => {
   const { data: groups, refetch: refetchGroups } = useGroupsQuery({
@@ -30,10 +30,8 @@ const Groups: FC = () => {
 
   return (
     <>
-      <Header title="Hue Dashboard" />
-      <Container paddingY={5}>
+      <BaseLayout title="Groups">
         <Stack spacing={5}>
-          <Heading as="h2">Groups</Heading>
           <Stack spacing={5}>
             {Object.entries(groups || {}).map(([key, value]) => {
               return (
@@ -83,7 +81,7 @@ const Groups: FC = () => {
             })}
           </Stack>
         </Stack>
-      </Container>
+      </BaseLayout>
     </>
   );
 };

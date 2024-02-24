@@ -1,26 +1,22 @@
 import { FC } from "react";
-import { Container, Heading, Stack } from "@chakra-ui/react";
+import { Container, Stack } from "@chakra-ui/react";
 import { useLightsQuery } from "@/hooks";
 import { LightCard } from "@/components/LightCard";
-import { Header } from "@/components/Header";
+import { BaseLayout } from "@/components/BaseLayout";
 
 const Lights: FC = () => {
   const { data: lights } = useLightsQuery();
 
   return (
-    <>
-      <Header title="Hue Dashboard" />
-      <Container paddingY={5}>
+    <BaseLayout title="Lights">
+      <Stack spacing={5}>
         <Stack spacing={5}>
-          <Heading as="h2">Lights</Heading>
-          <Stack spacing={5}>
-            {Object.entries(lights || {}).map(([key, value]) => {
-              return <LightCard key={key} deviceId={key} initialData={value} />;
-            })}
-          </Stack>
+          {Object.entries(lights || {}).map(([key, value]) => {
+            return <LightCard key={key} deviceId={key} initialData={value} />;
+          })}
         </Stack>
-      </Container>
-    </>
+      </Stack>
+    </BaseLayout>
   );
 };
 

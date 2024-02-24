@@ -1,15 +1,12 @@
-import { FC, useState, useEffect } from "react";
+import { FC, useEffect } from "react";
 import {
   Box,
   Container,
   Flex,
   Heading,
-  Image,
   Link,
-  Text,
-  Button,
   useColorModeValue,
-  useColorMode,
+  // useColorMode,
 } from "@chakra-ui/react";
 
 interface HeaderProps {
@@ -18,16 +15,8 @@ interface HeaderProps {
 
 const menuItems = [
   {
-    label: "Lights",
-    href: "/lights",
-  },
-  {
-    label: "Groups",
-    href: "/groups",
-  },
-  {
-    label: "Schedules",
-    href: "/schedules",
+    label: "Login",
+    href: "/login",
   },
 ];
 const Header: FC<HeaderProps> = ({ title }) => {

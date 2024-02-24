@@ -24,6 +24,8 @@ import { useLightsQuery, useGroupsQuery, useSchedulesQuery } from "@/hooks";
 import { LightCard } from "@/components/LightCard";
 import { GroupLightCard } from "@/components/GroupLightCard";
 import { Header } from "@/components/Header";
+import { SideMenu } from "@/components/SideMenu";
+import { BaseLayout } from "@/components/BaseLayout";
 
 const Home: FC = () => {
   const { data: lights } = useLightsQuery({});
@@ -35,85 +37,82 @@ const Home: FC = () => {
   });
 
   return (
-    <>
-      <Header title="Hue Dashboard" />
-      <Container paddingY={5}>
+    <BaseLayout title="Hue Dashboard">
+      <Stack spacing={5}>
+        <Heading as="h2">Lights</Heading>
         <Stack spacing={5}>
-          <Heading as="h2">Lights</Heading>
-          <Stack spacing={5}>
-            {Object.entries(lights || {}).map(([key, value]) => {
-              return (
-                <LightCard
-                  key={key}
-                  deviceId={key}
-                  initialData={value}
-                  onSuccess={() => refetchGroups()}
-                />
-              );
-            })}
-          </Stack>
-          <Heading as="h2">Groups</Heading>
-          <Stack spacing={5}>
-            {Object.entries(groups || {}).map(([key, value]) => {
-              return (
-                <Box key={key}>
-                  <Card>
-                    <CardHeader>
-                      <Flex justifyContent="space-between" alignItems="center">
-                        <Flex alignItems="center" gap={3}>
-                          <Avatar size="sm" name={value.name} />
-                          <Heading as="h3" size="md">
-                            {value.name}
-                          </Heading>
-                        </Flex>
-                        <Menu>
-                          <MenuButton
-                            as={IconButton}
-                            variant="ghost"
-                            icon={<BsThreeDotsVertical />}
-                            colorScheme="gray"
-                          />
-                          <MenuList>
-                            <MenuItem>Turn on</MenuItem>
-                            <MenuItem>Turn off</MenuItem>
-                          </MenuList>
-                        </Menu>
-                      </Flex>
-                    </CardHeader>
-                    <CardBody bg="gray.100">
-                      <Wrap spacing={3}>
-                        {value.lights.map((deviceId: string) => {
-                          return (
-                            <GroupLightCard
-                              key={deviceId}
-                              deviceId={deviceId}
-                              onSuccess={() => refetchGroups()}
-                            />
-                          );
-                        })}
-                      </Wrap>
-                    </CardBody>
-                    <CardFooter>
-                      <Switch isChecked={value.state.any_on} isDisabled />
-                    </CardFooter>
-                  </Card>
-                </Box>
-              );
-            })}
-          </Stack>
-          <Heading as="h2">Schedules</Heading>
-          <Stack spacing={5}>
-            {Object.entries(schedules || {}).map(([key, value]) => {
-              return (
-                <Box key={key}>
-                  {value.name}({value.status})
-                </Box>
-              );
-            })}
-          </Stack>
+          {Object.entries(lights || {}).map(([key, value]) => {
+            return (
+              <LightCard
+                key={key}
+                deviceId={key}
+                initialData={value}
+                onSuccess={() => refetchGroups()}
+              />
+            );
+          })}
         </Stack>
-      </Container>
-    </>
+        <Heading as="h2">Groups</Heading>
+        <Stack spacing={5}>
+          {Object.entries(groups || {}).map(([key, value]) => {
+            return (
+              <Box key={key}>
+                <Card>
+                  <CardHeader>
+                    <Flex justifyContent="space-between" alignItems="center">
+                      <Flex alignItems="center" gap={3}>
+                        <Avatar size="sm" name={value.name} />
+                        <Heading as="h3" size="md">
+                          {value.name}
+                        </Heading>
+                      </Flex>
+                      <Menu>
+                        <MenuButton
+                          as={IconButton}
+                          variant="ghost"
+                          icon={<BsThreeDotsVertical />}
+                          colorScheme="gray"
+                        />
+                        <MenuList>
+                          <MenuItem>Turn on</MenuItem>
+                          <MenuItem>Turn off</MenuItem>
+                        </MenuList>
+                      </Menu>
+                    </Flex>
+                  </CardHeader>
+                  <CardBody bg="gray.100">
+                    <Wrap spacing={3}>
+                      {value.lights.map((deviceId: string) => {
+                        return (
+                          <GroupLightCard
+                            key={deviceId}
+                            deviceId={deviceId}
+                            onSuccess={() => refetchGroups()}
+                          />
+                        );
+                      })}
+                    </Wrap>
+                  </CardBody>
+                  <CardFooter>
+                    <Switch isChecked={value.state.any_on} isDisabled />
+                  </CardFooter>
+                </Card>
+              </Box>
+            );
+          })}
+        </Stack>
+        <Heading as="h2">Schedules</Heading>
+        <Stack spacing={5}>
+          {Object.entries(schedules || {}).map(([key, value]) => {
+            return (
+              <Box key={key}>
+                {value.name}({value.status})
+              </Box>
+            );
+          })}
+        </Stack>
+      </Stack>
+    </BaseLayout>
   );
 };
 
