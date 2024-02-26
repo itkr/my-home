@@ -11,10 +11,10 @@ import {
   getLight,
   listLights,
   putLight,
-  // toggleLightState,
   // putLightState,
   listSchedules,
   listGroups,
+  listScenes,
 } from "@/api/hueBridge";
 
 type MutationOptions = {
@@ -90,6 +90,14 @@ const useSchedulesQuery = (options: UseQueryOptions = {}) => {
   return useQuery({ queryKey, queryFn, ...options });
 };
 
+// Scenes
+
+const useScenesQuery = (options: UseQueryOptions = {}) => {
+  const queryKey = "scenes";
+  const queryFn = listScenes;
+  return useQuery({ queryKey, queryFn, ...options });
+};
+
 export {
   // lights
   useLightsQuery,
@@ -101,4 +109,6 @@ export {
   useGroupMutation,
   // schedules
   useSchedulesQuery,
+  // scenes
+  useScenesQuery,
 };
