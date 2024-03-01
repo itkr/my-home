@@ -6,7 +6,7 @@ import {
   useQuery,
 } from "react-query";
 import { queryClient } from "@/config";
-import { Light } from "@/types";
+import { Group, Light } from "@/types";
 import { v1 } from "@/api/hueBridge";
 
 type MutationOptions = {
@@ -15,6 +15,22 @@ type MutationOptions = {
   onError?: (error: any, variables: any, context: any) => any;
   onSuccess?: (data: any, variables: any, context: any) => any;
   onSettled?: (data: any, error: any, variables: any, context: any) => any;
+};
+
+const makeOnMutate = (queryKey: string | string[], queryClient: any) => {
+  // Optimistic update 定型文
+  return async (variables: any) => {
+    // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+    await queryClient.cancelQueries(queryKey);
+    // Snapshot the previous value
+    const previousValue = queryClient.getQueryData(queryKey);
+    // Optimistically update to the new value
+    queryClient.setQueryData(queryKey, (old: any) => {
+      return { ...old, state: { ...old.state, ...variables } };
+    });
+    // Return a context object with the previous value
+    return { previousValue };
+  };
 };
 
 // Lights
@@ -37,19 +53,7 @@ const useLightMutation = (deviceId: string, options?: MutationOptions) => {
   const mutationFn = async (state: Partial<Light["state"]>) => {
     return await v1.light.put(deviceId, state);
   };
-  // Optimistic update 定型文
-  const onMutate = async (variables: any) => {
-    // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
-    await queryClient.cancelQueries(queryKey);
-    // Snapshot the previous value
-    const previousValue = queryClient.getQueryData(queryKey);
-    // Optimistically update to the new value
-    queryClient.setQueryData(queryKey, (old: any) => {
-      return { ...old, state: { ...old.state, ...variables } };
-    });
-    // Return a context object with the previous value
-    return { previousValue };
-  };
+  const onMutate = makeOnMutate(queryKey, queryClient);
   return useMutation({ mutationFn, onMutate, ...options });
 };
 
@@ -70,7 +74,7 @@ const useGroupQueryById = (groupId: string, options?: UseQueryOptions) => {
 
 const useGroupMutation = (groupId: string, options?: MutationOptions) => {
   // const queryKey = ["groups", groupId];
-  const mutationFn = async (state: Partial<Light["state"]>) => {
+  const mutationFn = async (state: Partial<Group["action"]>) => {
     return await v1.group.put(groupId, state);
   };
   return useMutation({ mutationFn, ...options });
