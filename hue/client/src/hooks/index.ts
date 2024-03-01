@@ -7,15 +7,7 @@ import {
 } from "react-query";
 import { queryClient } from "@/config";
 import { Light } from "@/types";
-import {
-  getLight,
-  listLights,
-  putLight,
-  // putLightState,
-  listSchedules,
-  listGroups,
-  listScenes,
-} from "@/api/hueBridge";
+import { v1 } from "@/api/hueBridge";
 
 type MutationOptions = {
   // UseMutationOptions
@@ -29,20 +21,21 @@ type MutationOptions = {
 
 const useLightsQuery = (options?: UseQueryOptions) => {
   const queryKey = "lights";
-  const queryFn = listLights;
+  // const queryFn = async (): Promise<Record<string, Light>> => await v1.light.list();
+  const queryFn = async () => await v1.light.list();
   return useQuery({ queryKey, queryFn, ...options });
 };
 
 const useLightQueryById = (deviceId: string, options?: UseQueryOptions) => {
   const queryKey = ["lights", deviceId];
-  const queryFn = async (): Promise<Light> => await getLight(deviceId);
+  const queryFn = async () => await v1.light.get(deviceId);
   return useQuery({ queryKey, queryFn, ...options });
 };
 
 const useLightMutation = (deviceId: string, options?: MutationOptions) => {
   const queryKey = ["lights", deviceId];
   const mutationFn = async (state: Partial<Light["state"]>) => {
-    return await putLight(deviceId, state);
+    return await v1.light.put(deviceId, state);
   };
   // Optimistic update 定型文
   const onMutate = async (variables: any) => {
@@ -64,20 +57,21 @@ const useLightMutation = (deviceId: string, options?: MutationOptions) => {
 
 const useGroupsQuery = (options?: UseQueryOptions) => {
   const queryKey = "groups";
-  const queryFn = listGroups;
+  const queryFn = async () => await v1.group.list();
   return useQuery({ queryKey, queryFn, ...options });
 };
 
 const useGroupQueryById = (groupId: string, options?: UseQueryOptions) => {
   const queryKey = ["groups", groupId];
-  const queryFn = async (): Promise<Light> => await getLight(groupId);
+  // const queryFn = async (): Promise<Group> => await v1.group.get(groupId);
+  const queryFn = async () => await v1.group.get(groupId);
   return useQuery({ queryKey, queryFn, ...options });
 };
 
 const useGroupMutation = (groupId: string, options?: MutationOptions) => {
   // const queryKey = ["groups", groupId];
   const mutationFn = async (state: Partial<Light["state"]>) => {
-    return await putLight(groupId, state);
+    return await v1.group.put(groupId, state);
   };
   return useMutation({ mutationFn, ...options });
 };
@@ -86,7 +80,7 @@ const useGroupMutation = (groupId: string, options?: MutationOptions) => {
 
 const useSchedulesQuery = (options: UseQueryOptions = {}) => {
   const queryKey = "schedules";
-  const queryFn = listSchedules;
+  const queryFn = async () => await v1.schedule.list();
   return useQuery({ queryKey, queryFn, ...options });
 };
 
@@ -94,7 +88,7 @@ const useSchedulesQuery = (options: UseQueryOptions = {}) => {
 
 const useScenesQuery = (options: UseQueryOptions = {}) => {
   const queryKey = "scenes";
-  const queryFn = listScenes;
+  const queryFn = async () => await v1.scene.list();
   return useQuery({ queryKey, queryFn, ...options });
 };
 
