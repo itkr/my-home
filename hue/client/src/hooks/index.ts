@@ -6,16 +6,8 @@ import {
   useQuery,
 } from "react-query";
 import { queryClient } from "@/config";
-import { Light } from "@/types";
-import {
-  getLight,
-  listLights,
-  putLight,
-  // toggleLightState,
-  // putLightState,
-  listSchedules,
-  listGroups,
-} from "@/api/hueBridge";
+import { Group, Light } from "@/types";
+import { v1 } from "@/api/hueBridge";
 
 type MutationOptions = {
   // UseMutationOptions
@@ -25,27 +17,9 @@ type MutationOptions = {
   onSettled?: (data: any, error: any, variables: any, context: any) => any;
 };
 
-// Lights
-
-const useLightsQuery = (options?: UseQueryOptions) => {
-  const queryKey = "lights";
-  const queryFn = listLights;
-  return useQuery({ queryKey, queryFn, ...options });
-};
-
-const useLightQueryById = (deviceId: string, options?: UseQueryOptions) => {
-  const queryKey = ["lights", deviceId];
-  const queryFn = async (): Promise<Light> => await getLight(deviceId);
-  return useQuery({ queryKey, queryFn, ...options });
-};
-
-const useLightMutation = (deviceId: string, options?: MutationOptions) => {
-  const queryKey = ["lights", deviceId];
-  const mutationFn = async (state: Partial<Light["state"]>) => {
-    return await putLight(deviceId, state);
-  };
+const makeOnMutate = (queryKey: string | string[], queryClient: any) => {
   // Optimistic update 定型文
-  const onMutate = async (variables: any) => {
+  return async (variables: any) => {
     // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
     await queryClient.cancelQueries(queryKey);
     // Snapshot the previous value
@@ -57,6 +31,29 @@ const useLightMutation = (deviceId: string, options?: MutationOptions) => {
     // Return a context object with the previous value
     return { previousValue };
   };
+};
+
+// Lights
+
+const useLightsQuery = (options?: UseQueryOptions) => {
+  const queryKey = "lights";
+  // const queryFn = async (): Promise<Record<string, Light>> => await v1.light.list();
+  const queryFn = async () => await v1.light.list();
+  return useQuery({ queryKey, queryFn, ...options });
+};
+
+const useLightQueryById = (deviceId: string, options?: UseQueryOptions) => {
+  const queryKey = ["lights", deviceId];
+  const queryFn = async () => await v1.light.get(deviceId);
+  return useQuery({ queryKey, queryFn, ...options });
+};
+
+const useLightMutation = (deviceId: string, options?: MutationOptions) => {
+  const queryKey = ["lights", deviceId];
+  const mutationFn = async (state: Partial<Light["state"]>) => {
+    return await v1.light.put(deviceId, state);
+  };
+  const onMutate = makeOnMutate(queryKey, queryClient);
   return useMutation({ mutationFn, onMutate, ...options });
 };
 
@@ -64,20 +61,21 @@ const useLightMutation = (deviceId: string, options?: MutationOptions) => {
 
 const useGroupsQuery = (options?: UseQueryOptions) => {
   const queryKey = "groups";
-  const queryFn = listGroups;
+  const queryFn = async () => await v1.group.list();
   return useQuery({ queryKey, queryFn, ...options });
 };
 
 const useGroupQueryById = (groupId: string, options?: UseQueryOptions) => {
   const queryKey = ["groups", groupId];
-  const queryFn = async (): Promise<Light> => await getLight(groupId);
+  // const queryFn = async (): Promise<Group> => await v1.group.get(groupId);
+  const queryFn = async () => await v1.group.get(groupId);
   return useQuery({ queryKey, queryFn, ...options });
 };
 
 const useGroupMutation = (groupId: string, options?: MutationOptions) => {
   // const queryKey = ["groups", groupId];
-  const mutationFn = async (state: Partial<Light["state"]>) => {
-    return await putLight(groupId, state);
+  const mutationFn = async (state: Partial<Group["action"]>) => {
+    return await v1.group.put(groupId, state);
   };
   return useMutation({ mutationFn, ...options });
 };
@@ -86,7 +84,15 @@ const useGroupMutation = (groupId: string, options?: MutationOptions) => {
 
 const useSchedulesQuery = (options: UseQueryOptions = {}) => {
   const queryKey = "schedules";
-  const queryFn = listSchedules;
+  const queryFn = async () => await v1.schedule.list();
+  return useQuery({ queryKey, queryFn, ...options });
+};
+
+// Scenes
+
+const useScenesQuery = (options: UseQueryOptions = {}) => {
+  const queryKey = "scenes";
+  const queryFn = async () => await v1.scene.list();
   return useQuery({ queryKey, queryFn, ...options });
 };
 
@@ -101,4 +107,6 @@ export {
   useGroupMutation,
   // schedules
   useSchedulesQuery,
+  // scenes
+  useScenesQuery,
 };

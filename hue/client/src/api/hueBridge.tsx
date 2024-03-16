@@ -1,68 +1,78 @@
 import axios from "axios";
 import { HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME } from "@/config";
-import { Light, Group, Schedule, PutResponse } from "@/types";
+import { Light, Group, Schedule, PutResponse, Scene } from "@/types";
 
-// Hue Bridge
+class BaseAPI<T> {
+  protected ip: string;
+  protected username: string;
+  protected resource: string;
+  constructor(ip: string, username: string, resource: string) {
+    this.ip = ip;
+    this.username = username;
+    this.resource = resource;
+  }
+  async list(): Promise<Record<string, T>> {
+    const url = `http://${this.ip}/api/${this.username}/${this.resource}`;
+    return await axios.get(url).then((res) => res.data);
+  }
+  async get(deviceId: string): Promise<T> {
+    const url = `http://${this.ip}/api/${this.username}/${this.resource}/${deviceId}`;
+    return await axios.get(url).then((res) => res.data);
+  }
+}
 
-const ip = HUE_BRIDGE_IP;
-const username = HUE_BRIDGE_USERNAME;
+class LightAPI extends BaseAPI<Light> {
+  constructor(ip: string, username: string) {
+    super(ip, username, "lights");
+  }
+  async put(
+    deviceId: string,
+    state: Partial<Light["state"]>
+  ): Promise<PutResponse> {
+    const url = `http://${this.ip}/api/${this.username}/${this.resource}/${deviceId}/state`;
+    return await axios.put(url, state);
+  }
+}
 
-// Light API
+class GroupAPI extends BaseAPI<Group> {
+  constructor(ip: string, username: string) {
+    super(ip, username, "groups");
+  }
+  async put(
+    groupId: string,
+    state: Partial<Group["action"]>
+  ): Promise<PutResponse> {
+    const url = `http://${this.ip}/api/${this.username}/${this.resource}/${groupId}/action`;
+    return await axios.put(url, state);
+  }
+}
 
-const listLights = async (): Promise<Record<string, Light>> => {
-  const url = `http://${ip}/api/${username}/lights`;
-  return await axios.get(url).then((res) => res.data);
-};
+class ScheduleAPI extends BaseAPI<Schedule> {
+  constructor(ip: string, username: string) {
+    super(ip, username, "schedules");
+  }
+}
 
-const getLight = async (deviceId: string): Promise<Light> => {
-  const url = `http://${ip}/api/${username}/lights/${deviceId}`;
-  return await axios.get(url).then((res) => res.data);
-};
+class SceneAPI extends BaseAPI<Scene> {
+  constructor(ip: string, username: string) {
+    super(ip, username, "scenes");
+  }
+}
 
-const putLight = async (
-  deviceId: string,
-  state: Partial<Light["state"]>
-): Promise<PutResponse> => {
-  const url = `http://${ip}/api/${username}/lights/${deviceId}/state`;
-  return await axios.put(url, state);
-};
+class HueBridge {
+  light: LightAPI;
+  group: GroupAPI;
+  schedule: ScheduleAPI;
+  scene: SceneAPI;
 
-// Group API
+  constructor(ip: string, username: string) {
+    this.light = new LightAPI(ip, username);
+    this.group = new GroupAPI(ip, username);
+    this.schedule = new ScheduleAPI(ip, username);
+    this.scene = new SceneAPI(ip, username);
+  }
+}
 
-const listGroups = async (): Promise<Record<string, Group>> => {
-  const url = `http://${ip}/api/${username}/groups`;
-  return await axios.get(url).then((res) => res.data);
-};
+const v1 = new HueBridge(HUE_BRIDGE_IP, HUE_BRIDGE_USERNAME);
 
-const getGroup = async (groupId: string): Promise<Group> => {
-  const url = `http://${ip}/api/${username}/groups/${groupId}`;
-  return await axios.get(url).then((res) => res.data);
-};
-
-const putGroup = async (
-  groupId: string,
-  state: Partial<Group["action"]>
-): Promise<PutResponse> => {
-  const url = `http://${ip}/api/${username}/groups/${groupId}/action`;
-  return await axios.put(url, state);
-};
-
-// Schedule API
-
-const listSchedules = async (): Promise<Record<string, Schedule>> => {
-  const url = `http://${ip}/api/${username}/schedules`;
-  return await axios.get(url).then((res) => res.data);
-};
-
-export {
-  // light
-  listLights,
-  getLight,
-  putLight,
-  // group
-  listGroups,
-  getGroup,
-  putGroup,
-  // schedule
-  listSchedules,
-};
+export { v1 };

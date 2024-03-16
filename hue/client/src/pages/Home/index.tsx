@@ -16,9 +16,16 @@ import {
   Stack,
   Switch,
   Wrap,
+  UnorderedList,
+  ListItem,
 } from "@chakra-ui/react";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { useLightsQuery, useGroupsQuery, useSchedulesQuery } from "@/hooks";
+import {
+  useLightsQuery,
+  useGroupsQuery,
+  useSchedulesQuery,
+  useScenesQuery,
+} from "@/hooks";
 import { LightCard } from "@/components/LightCard";
 import { GroupLightCard } from "@/components/GroupLightCard";
 import { BaseLayout } from "@/components/BaseLayout";
@@ -30,6 +37,9 @@ const Home: FC = () => {
   });
   const { data: schedules } = useSchedulesQuery({
     refetchInterval: 5000,
+  });
+  const { data: scenes } = useScenesQuery({
+    // refetchInterval: 5000,
   });
 
   return (
@@ -101,6 +111,27 @@ const Home: FC = () => {
             return (
               <Box key={key}>
                 {value.name}({value.status})
+              </Box>
+            );
+          })}
+        </Stack>
+        <Heading as="h2">Scenes</Heading>
+        <Stack spacing={5}>
+          {Object.entries(scenes || {}).map(([key, value]) => {
+            return (
+              <Box key={key}>
+                {value.name}({value.type})
+                <UnorderedList>
+                  <ListItem>Group: {value.group}</ListItem>
+                  <ListItem>Owner: {value.owner}</ListItem>
+                  <ListItem>Recycle: {value.recycle ? "Yes" : "No"}</ListItem>
+                  <ListItem>Locked: {value.locked ? "Yes" : "No"}</ListItem>
+                  <ListItem>Appdata: {JSON.stringify(value.appdata)}</ListItem>
+                  <ListItem>Last Updated: {value.lastupdated}</ListItem>
+                  <ListItem>Version: {value.version}</ListItem>
+                  <ListItem>Picture: {value.picture}</ListItem>
+                  <ListItem>Lights: {JSON.stringify(value.lights)}</ListItem>
+                </UnorderedList>
               </Box>
             );
           })}
