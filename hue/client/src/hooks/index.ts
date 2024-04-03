@@ -1,7 +1,7 @@
 import {
-  UseMutationOptions,
+  // UseMutationOptions,
   UseQueryOptions,
-  UseQueryResult,
+  // UseQueryResult,
   useMutation,
   useQuery,
 } from "react-query";
